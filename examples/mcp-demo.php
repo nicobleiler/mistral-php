@@ -1,16 +1,17 @@
 <?php
 
 /**
- * Simple MCP Client Demo
+ * Simple MCP Client Demo using official mcp/sdk
  * 
- * This example demonstrates the MCP client API without connecting to real servers.
+ * This example demonstrates the MCP client API structure.
+ * Note: Full functionality requires the mcp/sdk to be properly installed.
  */
 
 require_once __DIR__ . '/../vendor/autoload.php';
 
 use Mistral\Client;
 
-echo "=== Mistral AI MCP Client Integration Demo ===\n\n";
+echo "=== Mistral AI MCP Client Integration Demo (Official SDK) ===\n\n";
 
 // Initialize Mistral client
 $client = new Client('demo-api-key');

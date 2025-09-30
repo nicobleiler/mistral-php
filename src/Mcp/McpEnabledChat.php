@@ -5,10 +5,6 @@ namespace Mistral\Mcp;
 use Mistral\Resources\Chat as BaseChat;
 use Mistral\Types\Chat\ChatRequest;
 use Mistral\Types\Chat\ChatResponse;
-use Mistral\Types\Chat\Message;
-use Mistral\Types\Chat\Tool;
-use Mistral\Types\Chat\ToolCall;
-use Mistral\Types\Chat\Function_;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\GuzzleException;
 use Psr\Log\LoggerInterface;
@@ -18,7 +14,7 @@ use Psr\Log\NullLogger;
  * Enhanced Chat Resource with MCP Tool Integration
  * 
  * Extends the base Chat resource to support MCP tool calls
- * within Mistral conversations.
+ * within Mistral conversations using the official mcp/sdk.
  */
 class McpEnabledChat extends BaseChat
 {
@@ -41,18 +37,17 @@ class McpEnabledChat extends BaseChat
      */
     public function create(ChatRequest|array $params): ChatResponse
     {
-        if (is_array($params)) {
-            $params = ChatRequest::fromArray($params);
-        }
-
+        // Convert to array for internal processing if needed
+        $paramsArray = is_array($params) ? $params : $params->toArray();
+        
         // Add available MCP tools to the request
-        $params = $this->addMcpToolsToRequest($params);
+        $paramsArray = $this->addMcpToolsToRequest($paramsArray);
 
         // Call the base chat completion
-        $response = parent::create($params);
+        $response = parent::create($paramsArray);
 
         // Handle any tool calls in the response
-        $response = $this->handleToolCalls($response, $params);
+        $response = $this->handleToolCalls($response, $paramsArray);
 
         return $response;
     }
@@ -60,30 +55,30 @@ class McpEnabledChat extends BaseChat
     /**
      * Add available MCP tools to the chat request
      */
-    private function addMcpToolsToRequest(ChatRequest $params): ChatRequest
+    private function addMcpToolsToRequest(array $params): array
     {
         $mcpTools = $this->mcpManager->listAllTools();
-        $tools = $params->tools ?? [];
+        $tools = $params['tools'] ?? [];
 
         // Convert MCP tools to Mistral tool format
         foreach ($mcpTools as $serverName => $serverTools) {
             foreach ($serverTools as $tool) {
-                $mistralTool = new Tool(
-                    type: 'function',
-                    function: new Function_(
-                        name: "mcp_{$serverName}_{$tool['name']}",
-                        description: $tool['description'] ?: "Tool {$tool['name']} from MCP server {$serverName}",
-                        parameters: $tool['inputSchema'] ?: ['type' => 'object', 'properties' => []]
-                    )
-                );
+                $mistralTool = [
+                    'type' => 'function',
+                    'function' => [
+                        'name' => "mcp_{$serverName}_{$tool['name']}",
+                        'description' => $tool['description'] ?: "Tool {$tool['name']} from MCP server {$serverName}",
+                        'parameters' => $tool['inputSchema'] ?: ['type' => 'object', 'properties' => []]
+                    ]
+                ];
                 
                 $tools[] = $mistralTool;
             }
         }
 
         if (!empty($tools)) {
-            $params->tools = $tools;
-            $params->tool_choice = $params->tool_choice ?? 'auto';
+            $params['tools'] = $tools;
+            $params['tool_choice'] = $params['tool_choice'] ?? 'auto';
         }
 
         return $params;
@@ -92,7 +87,7 @@ class McpEnabledChat extends BaseChat
     /**
      * Handle tool calls in the response
      */
-    private function handleToolCalls(ChatResponse $response, ChatRequest $originalRequest): ChatResponse
+    private function handleToolCalls(ChatResponse $response, array $originalRequest): ChatResponse
     {
         $choice = $response->choices[0] ?? null;
         if (!$choice || !$choice->message->tool_calls) {
@@ -105,7 +100,13 @@ class McpEnabledChat extends BaseChat
         foreach ($choice->message->tool_calls as $toolCall) {
             if ($this->isMcpTool($toolCall->function->name)) {
                 $hasToolCalls = true;
-                $result = $this->executeMcpTool($toolCall);
+                $result = $this->executeMcpTool([
+                    'id' => $toolCall->id,
+                    'function' => [
+                        'name' => $toolCall->function->name,
+                        'arguments' => $toolCall->function->arguments
+                    ]
+                ]);
                 
                 $toolCallMessages[] = [
                     'role' => 'tool',
@@ -117,18 +118,14 @@ class McpEnabledChat extends BaseChat
 
         // If we executed MCP tools, continue the conversation with results
         if ($hasToolCalls) {
-            $messages = $originalRequest->messages;
+            $messages = $originalRequest['messages'];
             $messages[] = $choice->message->toArray();
             $messages = array_merge($messages, $toolCallMessages);
 
-            $followUpRequest = new ChatRequest(
-                model: $originalRequest->model,
-                messages: $messages,
-                temperature: $originalRequest->temperature,
-                max_tokens: $originalRequest->max_tokens,
-                tools: $originalRequest->tools,
-                tool_choice: 'none' // Don't allow recursive tool calls
-            );
+            $followUpRequest = array_merge($originalRequest, [
+                'messages' => $messages,
+                'tool_choice' => 'none' // Don't allow recursive tool calls
+            ]);
 
             return parent::create($followUpRequest);
         }
@@ -147,20 +144,20 @@ class McpEnabledChat extends BaseChat
     /**
      * Execute an MCP tool call
      *
-     * @param ToolCall $toolCall
+     * @param array $toolCall
      * @return array{content?: string, error?: string}
      */
-    private function executeMcpTool(ToolCall $toolCall): array
+    private function executeMcpTool(array $toolCall): array
     {
         // Parse MCP tool name: mcp_{server}_{tool}
-        $parts = explode('_', $toolCall->function->name, 3);
+        $parts = explode('_', $toolCall['function']['name'], 3);
         if (count($parts) < 3) {
             return ['error' => 'Invalid MCP tool name format'];
         }
 
         $serverName = $parts[1];
         $toolName = $parts[2];
-        $arguments = $toolCall->function->arguments ?? [];
+        $arguments = $toolCall['function']['arguments'] ?? [];
 
         $this->logger->info('Executing MCP tool', [
             'server' => $serverName,

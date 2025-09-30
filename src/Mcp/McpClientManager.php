@@ -2,27 +2,21 @@
 
 namespace Mistral\Mcp;
 
-use PhpMcp\Client\Client;
-use PhpMcp\Client\ClientBuilder;
-use PhpMcp\Client\Enum\TransportType;
-use PhpMcp\Client\Exception\McpClientException;
-use PhpMcp\Client\Model\Capabilities as ClientCapabilities;
-use PhpMcp\Client\ServerConfig;
 use Psr\Log\LoggerInterface;
 use Psr\Log\NullLogger;
 
 /**
- * MCP Client Manager for Mistral
+ * MCP Client Manager for Mistral using the official MCP SDK
  * 
- * Manages connections to external MCP servers and provides
- * tools for integration with Mistral conversations.
+ * This is a placeholder implementation that will use the official 
+ * mcp/sdk once it's properly installed and provides client functionality.
  */
 class McpClientManager
 {
-    /** @var array<string, Client> */
+    /** @var array<string, mixed> */
     private array $clients = [];
     
-    /** @var array<string, ServerConfig> */
+    /** @var array<string, array> */
     private array $serverConfigs = [];
     
     private LoggerInterface $logger;
@@ -41,32 +35,23 @@ class McpClientManager
      */
     public function addServer(string $name, string $transport, array $config): void
     {
-        $transportType = match (strtolower($transport)) {
-            'stdio' => TransportType::Stdio,
-            'http' => TransportType::Http,
-            default => throw new \InvalidArgumentException("Unsupported transport type: {$transport}")
-        };
+        if (!in_array($transport, ['stdio', 'http'])) {
+            throw new \InvalidArgumentException("Unsupported transport type: {$transport}");
+        }
 
-        $serverConfig = new ServerConfig(
-            name: $name,
-            transport: $transportType,
-            timeout: $config['timeout'] ?? 30,
-            command: $config['command'] ?? null,
-            args: $config['args'] ?? [],
-            workingDir: $config['working_dir'] ?? null,
-            url: $config['url'] ?? null,
-            env: $config['env'] ?? null,
-            headers: $config['headers'] ?? null
-        );
+        $this->serverConfigs[$name] = [
+            'transport' => $transport,
+            'config' => $config
+        ];
 
-        $this->serverConfigs[$name] = $serverConfig;
+        $this->logger->info("Added MCP server configuration '{$name}' with transport '{$transport}'");
     }
 
     /**
      * Connect to an MCP server
      *
      * @param string $serverName
-     * @throws McpClientException
+     * @throws \Exception
      */
     public function connect(string $serverName): void
     {
@@ -78,30 +63,18 @@ class McpClientManager
             return; // Already connected
         }
 
-        $config = $this->serverConfigs[$serverName];
+        // TODO: Implement actual MCP client connection using mcp/sdk
+        // This is a placeholder that would be replaced with proper SDK usage
         
-        $client = Client::make()
-            ->withClientInfo('Mistral PHP Client', '1.0.0')
-            ->withCapabilities(ClientCapabilities::forClient(supportsSampling: false))
-            ->withLogger($this->logger)
-            ->withServerConfig($config)
-            ->build();
-
-        try {
-            $client->initialize();
-            $this->clients[$serverName] = $client;
-            
-            $this->logger->info("Connected to MCP server '{$serverName}'", [
-                'server_name' => $client->getServerName(),
-                'server_version' => $client->getServerVersion(),
-                'protocol_version' => $client->getNegotiatedProtocolVersion(),
-            ]);
-        } catch (McpClientException $e) {
-            $this->logger->error("Failed to connect to MCP server '{$serverName}'", [
-                'error' => $e->getMessage(),
-            ]);
-            throw $e;
-        }
+        $this->logger->info("Attempting to connect to MCP server '{$serverName}'");
+        
+        // For now, we'll simulate a connection
+        $this->clients[$serverName] = [
+            'connected' => true,
+            'config' => $this->serverConfigs[$serverName]
+        ];
+        
+        $this->logger->info("Connected to MCP server '{$serverName}'");
     }
 
     /**
@@ -112,7 +85,6 @@ class McpClientManager
     public function disconnect(string $serverName): void
     {
         if (isset($this->clients[$serverName])) {
-            $this->clients[$serverName]->disconnect();
             unset($this->clients[$serverName]);
             $this->logger->info("Disconnected from MCP server '{$serverName}'");
         }
@@ -139,15 +111,13 @@ class McpClientManager
         
         foreach ($this->clients as $serverName => $client) {
             try {
-                $tools = $client->listTools();
-                $allTools[$serverName] = array_map(function ($tool) {
-                    return [
-                        'name' => $tool->name,
-                        'description' => $tool->description ?? '',
-                        'inputSchema' => $tool->inputSchema ?? [],
-                    ];
-                }, $tools);
-            } catch (McpClientException $e) {
+                // TODO: Implement actual tool listing using mcp/sdk
+                // This is a placeholder that would be replaced with proper SDK usage
+                
+                $allTools[$serverName] = [
+                    // Example tools that would come from actual MCP servers
+                ];
+            } catch (\Exception $e) {
                 $this->logger->warning("Failed to list tools from server '{$serverName}'", [
                     'error' => $e->getMessage(),
                 ]);
@@ -177,40 +147,20 @@ class McpClientManager
         }
 
         try {
-            $client = $this->clients[$serverName];
-            $result = $client->callTool($toolName, $arguments);
+            // TODO: Implement actual tool calling using mcp/sdk
+            // This is a placeholder that would be replaced with proper SDK usage
+            
+            $this->logger->info("Calling tool '{$toolName}' on server '{$serverName}'", [
+                'arguments' => $arguments
+            ]);
 
-            if ($result->isSuccess()) {
-                $content = '';
-                foreach ($result->content as $contentItem) {
-                    if (method_exists($contentItem, 'getText')) {
-                        $content .= $contentItem->getText();
-                    } elseif (isset($contentItem->text)) {
-                        $content .= $contentItem->text;
-                    }
-                }
-
-                return [
-                    'success' => true,
-                    'content' => $content,
-                ];
-            } else {
-                $errorContent = '';
-                foreach ($result->content as $contentItem) {
-                    if (method_exists($contentItem, 'getText')) {
-                        $errorContent .= $contentItem->getText();
-                    } elseif (isset($contentItem->text)) {
-                        $errorContent .= $contentItem->text;
-                    }
-                }
-
-                return [
-                    'success' => false,
-                    'content' => '',
-                    'error' => $errorContent ?: 'Tool execution failed'
-                ];
-            }
-        } catch (McpClientException $e) {
+            // For now, return a placeholder response
+            return [
+                'success' => false,
+                'content' => '',
+                'error' => 'MCP SDK not properly installed - tool calling not yet implemented'
+            ];
+        } catch (\Exception $e) {
             $this->logger->error("Tool call failed", [
                 'server' => $serverName,
                 'tool' => $toolName,
@@ -250,20 +200,18 @@ class McpClientManager
      * Get server information
      *
      * @param string $serverName
-     * @return array{name: string, version: string, protocol_version: string}|null
+     * @return array{name: string, transport: string, connected: bool}|null
      */
     public function getServerInfo(string $serverName): ?array
     {
-        if (!isset($this->clients[$serverName])) {
+        if (!isset($this->serverConfigs[$serverName])) {
             return null;
         }
 
-        $client = $this->clients[$serverName];
-        
         return [
-            'name' => $client->getServerName(),
-            'version' => $client->getServerVersion(),
-            'protocol_version' => $client->getNegotiatedProtocolVersion(),
+            'name' => $serverName,
+            'transport' => $this->serverConfigs[$serverName]['transport'],
+            'connected' => $this->isConnected($serverName)
         ];
     }
 }

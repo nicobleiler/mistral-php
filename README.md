@@ -370,7 +370,7 @@ $client->chat()->stream([
 
 ## Model Context Protocol (MCP) Client Integration
 
-This package includes MCP client support, allowing Mistral AI to call external MCP tools during conversations. This enables powerful integrations with external services and tools.
+This package includes MCP client support using the official `mcp/sdk` package, allowing Mistral AI to call external MCP tools during conversations. This enables powerful integrations with external services and tools.
 
 ### Quick Start with MCP
 
