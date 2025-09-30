@@ -11,6 +11,7 @@ use Illuminate\Support\Facades\Facade;
  * @method static \Mistral\Resources\Files files()
  * @method static \Mistral\Resources\FineTuning fineTuning()
  * @method static \Mistral\Resources\Agents agents()
+ * @method static \Mistral\Resources\Conversations conversations()
  * @method static array request(string $method, string $endpoint, array $data = [])
  */
 class Mistral extends Facade

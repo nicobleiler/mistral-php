@@ -6,6 +6,7 @@ use GuzzleHttp\Client as GuzzleClient;
 use GuzzleHttp\Exception\GuzzleException;
 use Mistral\Resources\Agents;
 use Mistral\Resources\Chat;
+use Mistral\Resources\Conversations;
 use Mistral\Resources\Embeddings;
 use Mistral\Resources\Files;
 use Mistral\Resources\FineTuning;
@@ -61,6 +62,11 @@ class Client
     public function agents(): Agents
     {
         return new Agents($this->client);
+    }
+
+    public function conversations(): Conversations
+    {
+        return new Conversations($this->client);
     }
 
     /**
