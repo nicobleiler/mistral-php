@@ -2,19 +2,20 @@
 
 namespace Mistral\Mcp;
 
+use Mcp\Client\Client;
+use Mcp\Client\ClientSession;
 use Psr\Log\LoggerInterface;
 use Psr\Log\NullLogger;
 
 /**
- * MCP Client Manager for Mistral using the official MCP SDK
+ * MCP Client Manager for Mistral using the logiscape/mcp-sdk-php
  * 
- * This is a placeholder implementation that will use the official 
- * mcp/sdk once it's properly installed and provides client functionality.
+ * Manages connections to MCP servers and provides tool calling functionality.
  */
 class McpClientManager
 {
-    /** @var array<string, mixed> */
-    private array $clients = [];
+    /** @var array<string, ClientSession> */
+    private array $sessions = [];
     
     /** @var array<string, array> */
     private array $serverConfigs = [];
@@ -59,22 +60,43 @@ class McpClientManager
             throw new \InvalidArgumentException("Server '{$serverName}' not configured");
         }
 
-        if (isset($this->clients[$serverName])) {
+        if (isset($this->sessions[$serverName])) {
             return; // Already connected
         }
 
-        // TODO: Implement actual MCP client connection using mcp/sdk
-        // This is a placeholder that would be replaced with proper SDK usage
-        
+        $config = $this->serverConfigs[$serverName];
         $this->logger->info("Attempting to connect to MCP server '{$serverName}'");
         
-        // For now, we'll simulate a connection
-        $this->clients[$serverName] = [
-            'connected' => true,
-            'config' => $this->serverConfigs[$serverName]
-        ];
-        
-        $this->logger->info("Connected to MCP server '{$serverName}'");
+        try {
+            $client = new Client($this->logger);
+            
+            if ($config['transport'] === 'stdio') {
+                // STDIO transport
+                $command = $config['config']['command'] ?? 'node';
+                $args = $config['config']['args'] ?? [];
+                $env = $config['config']['env'] ?? null;
+                
+                $session = $client->connect($command, $args, $env);
+            } else {
+                // HTTP transport
+                $url = $config['config']['url'] ?? '';
+                $headers = $config['config']['headers'] ?? [];
+                $httpOptions = [
+                    'connectionTimeout' => $config['config']['timeout'] ?? 30,
+                    'readTimeout' => $config['config']['timeout'] ?? 60,
+                ];
+                
+                $session = $client->connect($url, $headers, $httpOptions);
+            }
+            
+            $this->sessions[$serverName] = $session;
+            $this->logger->info("Connected to MCP server '{$serverName}'");
+        } catch (\Exception $e) {
+            $this->logger->error("Failed to connect to MCP server '{$serverName}'", [
+                'error' => $e->getMessage(),
+            ]);
+            throw $e;
+        }
     }
 
     /**
@@ -84,9 +106,17 @@ class McpClientManager
      */
     public function disconnect(string $serverName): void
     {
-        if (isset($this->clients[$serverName])) {
-            unset($this->clients[$serverName]);
-            $this->logger->info("Disconnected from MCP server '{$serverName}'");
+        if (isset($this->sessions[$serverName])) {
+            try {
+                // The logiscape SDK doesn't have an explicit disconnect method
+                // The session will be closed when the object is destroyed
+                unset($this->sessions[$serverName]);
+                $this->logger->info("Disconnected from MCP server '{$serverName}'");
+            } catch (\Exception $e) {
+                $this->logger->warning("Error disconnecting from MCP server '{$serverName}'", [
+                    'error' => $e->getMessage(),
+                ]);
+            }
         }
     }
 
@@ -95,7 +125,7 @@ class McpClientManager
      */
     public function disconnectAll(): void
     {
-        foreach (array_keys($this->clients) as $serverName) {
+        foreach (array_keys($this->sessions) as $serverName) {
             $this->disconnect($serverName);
         }
     }
@@ -109,14 +139,22 @@ class McpClientManager
     {
         $allTools = [];
         
-        foreach ($this->clients as $serverName => $client) {
+        foreach ($this->sessions as $serverName => $session) {
             try {
-                // TODO: Implement actual tool listing using mcp/sdk
-                // This is a placeholder that would be replaced with proper SDK usage
+                $toolsResult = $session->listTools();
                 
-                $allTools[$serverName] = [
-                    // Example tools that would come from actual MCP servers
-                ];
+                $tools = [];
+                if (!empty($toolsResult->tools)) {
+                    foreach ($toolsResult->tools as $tool) {
+                        $tools[] = [
+                            'name' => $tool->name,
+                            'description' => $tool->description ?? '',
+                            'inputSchema' => $tool->inputSchema ?? ['type' => 'object', 'properties' => []],
+                        ];
+                    }
+                }
+                
+                $allTools[$serverName] = $tools;
             } catch (\Exception $e) {
                 $this->logger->warning("Failed to list tools from server '{$serverName}'", [
                     'error' => $e->getMessage(),
@@ -138,7 +176,7 @@ class McpClientManager
      */
     public function callTool(string $serverName, string $toolName, array $arguments = []): array
     {
-        if (!isset($this->clients[$serverName])) {
+        if (!isset($this->sessions[$serverName])) {
             return [
                 'success' => false,
                 'content' => '',
@@ -147,18 +185,27 @@ class McpClientManager
         }
 
         try {
-            // TODO: Implement actual tool calling using mcp/sdk
-            // This is a placeholder that would be replaced with proper SDK usage
-            
             $this->logger->info("Calling tool '{$toolName}' on server '{$serverName}'", [
                 'arguments' => $arguments
             ]);
 
-            // For now, return a placeholder response
+            $session = $this->sessions[$serverName];
+            $result = $session->callTool($toolName, $arguments);
+            
+            // Extract content from the result
+            $content = '';
+            if (!empty($result->content)) {
+                foreach ($result->content as $contentItem) {
+                    if (isset($contentItem->text)) {
+                        $content .= $contentItem->text;
+                    }
+                }
+            }
+            
             return [
-                'success' => false,
-                'content' => '',
-                'error' => 'MCP SDK not properly installed - tool calling not yet implemented'
+                'success' => !$result->isError,
+                'content' => $content,
+                'error' => $result->isError ? 'Tool execution failed' : null
             ];
         } catch (\Exception $e) {
             $this->logger->error("Tool call failed", [
@@ -182,7 +229,7 @@ class McpClientManager
      */
     public function getConnectedServers(): array
     {
-        return array_keys($this->clients);
+        return array_keys($this->sessions);
     }
 
     /**
@@ -193,7 +240,7 @@ class McpClientManager
      */
     public function isConnected(string $serverName): bool
     {
-        return isset($this->clients[$serverName]);
+        return isset($this->sessions[$serverName]);
     }
 
     /**
