@@ -19,7 +19,7 @@ return [
     | The base URL for the Mistral AI API. You typically don't need to change this.
     |
     */
-    'base_url' => env('MISTRAL_BASE_URL', 'https://api.mistral.ai/v1'),
+    'base_url' => env('MISTRAL_BASE_URL', 'https://api.mistral.ai'),
 
     /*
     |--------------------------------------------------------------------------

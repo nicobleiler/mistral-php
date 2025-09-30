@@ -23,10 +23,10 @@ class Chat
      */
     public function create(array $params): array
     {
-        $response = $this->client->request('POST', '/chat/completions', [
+        $response = $this->client->request('POST', '/v1/chat/completions', [
             'json' => $params
         ]);
-        
+
         return json_decode($response->getBody()->getContents(), true);
     }
 
@@ -41,28 +41,28 @@ class Chat
     public function stream(array $params, callable $callback): void
     {
         $params['stream'] = true;
-        
+
         $response = $this->client->request('POST', '/chat/completions', [
             'json' => $params,
             'stream' => true
         ]);
 
         $body = $response->getBody();
-        
+
         while (!$body->eof()) {
             $line = $this->readLine($body);
-            
+
             if (empty($line)) {
                 continue;
             }
-            
+
             if (str_starts_with($line, 'data: ')) {
                 $data = substr($line, 6);
-                
+
                 if ($data === '[DONE]') {
                     break;
                 }
-                
+
                 $chunk = json_decode($data, true);
                 if ($chunk !== null) {
                     $callback($chunk);

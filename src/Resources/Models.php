@@ -22,8 +22,8 @@ class Models
      */
     public function list(): array
     {
-        $response = $this->client->request('GET', '/models');
-        
+        $response = $this->client->request('GET', '/v1/models');
+
         return json_decode($response->getBody()->getContents(), true);
     }
 
@@ -37,7 +37,7 @@ class Models
     public function get(string $modelId): array
     {
         $response = $this->client->request('GET', "/models/{$modelId}");
-        
+
         return json_decode($response->getBody()->getContents(), true);
     }
 }

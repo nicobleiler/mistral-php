@@ -23,10 +23,10 @@ class Embeddings
      */
     public function create(array $params): array
     {
-        $response = $this->client->request('POST', '/embeddings', [
+        $response = $this->client->request('POST', '/v1/embeddings', [
             'json' => $params
         ]);
-        
+
         return json_decode($response->getBody()->getContents(), true);
     }
 }
