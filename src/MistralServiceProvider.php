@@ -3,6 +3,7 @@
 namespace Mistral;
 
 use Illuminate\Support\ServiceProvider;
+use Mistral\Mcp\MistralMcpServer;
 
 class MistralServiceProvider extends ServiceProvider
 {
@@ -25,6 +26,16 @@ class MistralServiceProvider extends ServiceProvider
         });
         
         $this->app->alias(Client::class, 'mistral');
+
+        // Register MCP server if enabled
+        $this->app->singleton(MistralMcpServer::class, function ($app) {
+            $mistralClient = $app->make(Client::class);
+            $logger = $app->has('log') ? $app->make('log') : null;
+            
+            return new MistralMcpServer($mistralClient, $logger, $app);
+        });
+        
+        $this->app->alias(MistralMcpServer::class, 'mistral.mcp');
     }
 
     /**

@@ -11,6 +11,9 @@ use Mistral\Resources\Embeddings;
 use Mistral\Resources\Files;
 use Mistral\Resources\FineTuning;
 use Mistral\Resources\Models;
+use Mistral\Mcp\MistralMcpServer;
+use Psr\Log\LoggerInterface;
+use Psr\Container\ContainerInterface;
 
 class Client
 {
@@ -93,5 +96,19 @@ class Client
         $response = $this->client->request($method, $endpoint, $options);
         
         return json_decode($response->getBody()->getContents(), true);
+    }
+
+    /**
+     * Create an MCP server for this Mistral client
+     * 
+     * @param LoggerInterface|null $logger Optional logger for the MCP server
+     * @param ContainerInterface|null $container Optional DI container
+     * @return MistralMcpServer
+     */
+    public function createMcpServer(
+        ?LoggerInterface $logger = null,
+        ?ContainerInterface $container = null
+    ): MistralMcpServer {
+        return new MistralMcpServer($this, $logger ?? new \Psr\Log\NullLogger(), $container);
     }
 }

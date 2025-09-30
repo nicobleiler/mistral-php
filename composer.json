@@ -20,7 +20,8 @@
     "require": {
         "php": "^8.3|^8.4",
         "guzzlehttp/guzzle": "^7.10",
-        "illuminate/support": "^8.0|^9.0|^10.0|^11.0|^12.0"
+        "illuminate/support": "^8.0|^9.0|^10.0|^11.0|^12.0",
+        "mcp/sdk": "dev-main"
     },
     "require-dev": {
         "phpunit/phpunit": "^12.3",
@@ -43,7 +44,8 @@
                 "Mistral\\MistralServiceProvider"
             ],
             "aliases": {
-                "Mistral": "Mistral\\Facades\\Mistral"
+                "Mistral": "Mistral\\Facades\\Mistral",
+                "MistralMcp": "Mistral\\Facades\\MistralMcp"
             }
         }
     },
@@ -51,6 +53,9 @@
         "test": "phpunit",
         "test-coverage": "phpunit --coverage-html coverage"
     },
+    "bin": [
+        "bin/mistral-mcp-server.php"
+    ],
     "minimum-stability": "stable",
     "prefer-stable": true
 }
