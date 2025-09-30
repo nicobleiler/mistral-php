@@ -4,12 +4,13 @@ A comprehensive PHP client library for the Mistral AI API with Laravel support.
 
 ## Features
 
-- 🚀 Full Mistral AI API support (Chat Completions, Embeddings, Models)
+- 🚀 Full Mistral AI API support (Chat Completions, Embeddings, Models, Conversations)
 - 🎯 Laravel integration with service provider and facade
 - 🔄 Streaming support for chat completions
-- 📝 Type-safe responses
+- 📝 Type-safe responses with PHP classes
 - ⚡ PSR-4 autoloading
 - 🧪 Comprehensive test suite
+- 🔄 Backward compatibility with array-based API
 
 ## Installation
 
@@ -243,51 +244,48 @@ $deleted = $client->agents()->delete($agent['id']);
 
 ## Type Safety
 
-This package includes comprehensive PHP type annotations for all API methods. IDE autocompletion and static analysis tools will provide full type checking for:
+This package includes comprehensive PHP type safety through actual PHP classes, not just PHPDoc annotations. IDE autocompletion and static analysis tools will provide full type checking for:
 
-- **Input parameters**: All method parameters are typed with detailed array shapes
-- **Return values**: Complete response structure typing for all API responses
-- **Optional parameters**: Proper optional parameter handling with default values
-- **Union types**: Support for parameters that accept multiple types (e.g., `string|array<string>`)
+- **Input parameters**: Typed request classes with fluent builder patterns
+- **Return values**: Typed response classes with proper object hierarchies  
+- **Backward compatibility**: Existing array-based code continues to work
+- **IDE support**: Full autocompletion and IntelliSense in modern IDEs
 
 Example with full type support:
 
 ```php
-// Parameters are fully typed - your IDE will show available options
-$response = $client->chat()->create([
-    'model' => 'mistral-tiny',              // string (required)
-    'messages' => [                         // array<array{role: string, content: string, name?: string}>
-        [
-            'role' => 'user',               // 'user'|'assistant'|'system'
-            'content' => 'Hello world',     // string
-            'name' => 'user123'             // string (optional)
-        ]
-    ],
-    'temperature' => 0.7,                   // float (optional)
-    'max_tokens' => 100,                    // int (optional)
-    'tools' => [                            // array<array{type: string, function: array}> (optional)
-        [
-            'type' => 'function',
-            'function' => [
-                'name' => 'get_weather',
-                'description' => 'Get current weather',
-                'parameters' => [/* ... */]
-            ]
-        ]
-    ]
-]);
+use Mistral\Types\Chat\ChatRequest;
+use Mistral\Types\Chat\Message;
 
-// Return value is also fully typed
-echo $response['choices'][0]['message']['content']; // IDE knows this is a string
+// Create typed request objects
+$messages = [
+    new Message('user', 'Hello world', 'user123'), // Full IDE completion
+    new Message('assistant', 'Hello! How can I help?')
+];
+
+$request = new ChatRequest(
+    model: 'mistral-tiny',              // string (required)
+    messages: $messages,                // Message[] - strongly typed
+    temperature: 0.7,                   // float (optional)
+    max_tokens: 100                     // int (optional)
+);
+
+// Make request and get typed response
+$response = $client->chat()->create($request); // Returns ChatResponse object
+
+// Access response with full type safety
+echo $response->choices[0]->message->content; // IDE knows exact types
+echo $response->usage->total_tokens;          // No guessing about structure
 ```
 
 ## API Reference
 
 ### Chat Completions
 
-Create chat completions with the Mistral AI models:
+Create chat completions with the Mistral AI models using either arrays (for backward compatibility) or typed objects (for enhanced type safety):
 
 ```php
+// Using arrays (backward compatible)
 $response = $client->chat()->create([
     'model' => 'mistral-tiny',
     'messages' => [
@@ -299,6 +297,57 @@ $response = $client->chat()->create([
     'top_p' => 1,
     'stream' => false
 ]);
+
+// Using typed objects (recommended for new code)
+use Mistral\Types\Chat\ChatRequest;
+use Mistral\Types\Chat\Message;
+
+$messages = [
+    new Message('system', 'You are a helpful assistant.'),
+    new Message('user', 'What is the capital of France?')
+];
+
+$request = new ChatRequest(
+    model: 'mistral-tiny',
+    messages: $messages,
+    temperature: 0.7,
+    max_tokens: 100
+);
+
+$response = $client->chat()->create($request); // Returns ChatResponse object
+echo $response->choices[0]->message->content; // Full IDE autocompletion
+```
+
+### Conversations
+
+Manage conversations with AI agents:
+
+```php
+use Mistral\Types\Conversations\ConversationRequest;
+
+// Create a conversation
+$request = new ConversationRequest(
+    agent_id: 'agent-123',
+    metadata: ['topic' => 'programming-help']
+);
+$conversation = $client->conversations()->create($request);
+
+// List conversations
+$conversations = $client->conversations()->list([
+    'limit' => 10,
+    'order' => 'desc'
+]);
+
+// Retrieve a conversation
+$conversation = $client->conversations()->retrieve('conv-abc123');
+
+// Update a conversation
+$updated = $client->conversations()->update('conv-abc123', [
+    'metadata' => ['status' => 'active']
+]);
+
+// Delete a conversation
+$deleted = $client->conversations()->delete('conv-abc123');
 ```
 
 ### Streaming
