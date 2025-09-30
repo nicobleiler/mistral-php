@@ -2,47 +2,44 @@ name: Tests
 
 on:
   push:
-    branches: [ main, master ]
+    branches: [main, master]
   pull_request:
-    branches: [ main, master ]
+    branches: [main, master]
 
 jobs:
   test:
     runs-on: ubuntu-latest
-    
+
     strategy:
       matrix:
-        php-version: [8.1, 8.2, 8.3]
-        laravel-version: [10.*, 11.*]
-        exclude:
-          - php-version: 8.1
-            laravel-version: 11.*
+        php-version: [8.2, 8.3, 8.4]
+        laravel-version: [11.*, 12.*]
 
     name: PHP ${{ matrix.php-version }} - Laravel ${{ matrix.laravel-version }}
 
     steps:
-    - uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-    - name: Setup PHP
-      uses: shivammathur/setup-php@v2
-      with:
-        php-version: ${{ matrix.php-version }}
-        extensions: dom, curl, libxml, mbstring, zip, pcntl, pdo, sqlite, pdo_sqlite, bcmath, soap, intl, gd, exif, iconv
-        coverage: pcov
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php-version }}
+          extensions: dom, curl, libxml, mbstring, zip, pcntl, pdo, sqlite, pdo_sqlite, bcmath, soap, intl, gd, exif, iconv
+          coverage: pcov
 
-    - name: Cache Composer packages
-      id: composer-cache
-      uses: actions/cache@v3
-      with:
-        path: vendor
-        key: ${{ runner.os }}-php-${{ matrix.php-version }}-laravel-${{ matrix.laravel-version }}-${{ hashFiles('**/composer.lock') }}
-        restore-keys: |
-          ${{ runner.os }}-php-${{ matrix.php-version }}-laravel-${{ matrix.laravel-version }}-
+      - name: Cache Composer packages
+        id: composer-cache
+        uses: actions/cache@v3
+        with:
+          path: vendor
+          key: ${{ runner.os }}-php-${{ matrix.php-version }}-laravel-${{ matrix.laravel-version }}-${{ hashFiles('**/composer.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-php-${{ matrix.php-version }}-laravel-${{ matrix.laravel-version }}-
 
-    - name: Install dependencies
-      run: |
-        composer require "illuminate/support:${{ matrix.laravel-version }}" --no-interaction --no-update
-        composer install --prefer-dist --no-interaction
+      - name: Install dependencies
+        run: |
+          composer require "illuminate/support:${{ matrix.laravel-version }}" --no-interaction --no-update
+          composer install --prefer-dist --no-interaction
 
-    - name: Run test suite
-      run: composer run-script test
+      - name: Run test suite
+        run: composer run-script test
