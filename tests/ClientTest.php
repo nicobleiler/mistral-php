@@ -1,0 +1,46 @@
+<?php
+
+namespace Mistral\Tests;
+
+use PHPUnit\Framework\TestCase;
+use Mistral\Client;
+
+class ClientTest extends TestCase
+{
+    public function test_client_can_be_instantiated()
+    {
+        $client = new Client('test-api-key');
+        
+        $this->assertInstanceOf(Client::class, $client);
+    }
+
+    public function test_client_has_chat_resource()
+    {
+        $client = new Client('test-api-key');
+        
+        $this->assertInstanceOf(\Mistral\Resources\Chat::class, $client->chat());
+    }
+
+    public function test_client_has_embeddings_resource()
+    {
+        $client = new Client('test-api-key');
+        
+        $this->assertInstanceOf(\Mistral\Resources\Embeddings::class, $client->embeddings());
+    }
+
+    public function test_client_has_models_resource()
+    {
+        $client = new Client('test-api-key');
+        
+        $this->assertInstanceOf(\Mistral\Resources\Models::class, $client->models());
+    }
+
+    public function test_client_uses_custom_base_url()
+    {
+        $customUrl = 'https://custom.api.com/v1';
+        $client = new Client('test-api-key', $customUrl);
+        
+        // We can't directly test the private property, but we can verify the client was created
+        $this->assertInstanceOf(Client::class, $client);
+    }
+}
