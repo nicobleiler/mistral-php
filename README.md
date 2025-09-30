@@ -5,6 +5,7 @@ A comprehensive PHP client library for the Mistral AI API with Laravel support.
 ## Features
 
 - 🚀 Full Mistral AI API support (Chat Completions, Embeddings, Models, Conversations)
+- 🔌 Model Context Protocol (MCP) integration with standalone server
 - 🎯 Laravel integration with service provider and facade
 - 🔄 Streaming support for chat completions
 - 📝 Type-safe responses with PHP classes
@@ -365,6 +366,107 @@ $client->chat()->stream([
         flush();
     }
 });
+```
+
+## Model Context Protocol (MCP) Integration
+
+This package includes full support for the Model Context Protocol (MCP), allowing you to expose Mistral AI capabilities as MCP tools and resources.
+
+### Quick Start with MCP
+
+The package provides a standalone MCP server that can be used by any MCP-compatible client:
+
+```bash
+# Set your API key
+export MISTRAL_API_KEY=your-api-key
+
+# Run the MCP server (stdio transport)
+php vendor/bin/mistral-mcp-server.php
+
+# Or run with HTTP transport
+php vendor/bin/mistral-mcp-server.php --transport=http --port=8080
+```
+
+### MCP Tools Available
+
+The MCP server exposes these tools:
+
+- **`mistral_chat`** - Generate chat completions with Mistral AI
+- **`mistral_embed`** - Generate text embeddings  
+- **`mistral_list_models`** - List available Mistral models
+- **`mistral_get_model`** - Get details about a specific model
+
+### MCP Resources Available
+
+- **`mistral://models/info`** - Information about Mistral models and capabilities
+- **`mistral://config/client`** - Current client configuration
+
+### Using MCP Programmatically
+
+You can also create and manage MCP servers programmatically:
+
+```php
+use Mistral\Client;
+use Mistral\Mcp\MistralMcpServer;
+
+// Create client
+$client = new Client('your-api-key');
+
+// Create MCP server
+$mcpServer = $client->createMcpServer();
+
+// Run with stdio transport
+$mcpServer->runStdio();
+
+// Or run with HTTP transport
+$mcpServer->runHttp('127.0.0.1', 8080);
+```
+
+### Laravel MCP Integration
+
+In Laravel, you can access the MCP server through the service container:
+
+```php
+use Mistral\Facades\MistralMcp;
+
+// Get the MCP server instance
+$mcpServer = app(MistralMcpServer::class);
+
+// Or use the facade
+MistralMcp::runStdio();
+```
+
+### MCP Server Command Options
+
+```bash
+php vendor/bin/mistral-mcp-server.php [options]
+
+Options:
+  --transport=stdio|http   Transport method (default: stdio)
+  --host=HOST             HTTP host (default: 127.0.0.1)  
+  --port=PORT             HTTP port (default: 8080)
+  --api-key=KEY           Mistral API key (or set MISTRAL_API_KEY env var)
+  --base-url=URL          Custom Mistral API base URL
+  --log-level=LEVEL       Log level (debug, info, warning, error)
+  --help                  Show help message
+```
+
+### MCP Client Integration
+
+To use this MCP server in an MCP client (like Claude Desktop), add it to your MCP configuration:
+
+```json
+{
+  "mcpServers": {
+    "mistral": {
+      "command": "php",
+      "args": ["vendor/bin/mistral-mcp-server.php"],
+      "env": {
+        "MISTRAL_API_KEY": "your-api-key"
+      }
+    }
+  }
+}
 ```
 
 ## Configuration
