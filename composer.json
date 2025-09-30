@@ -52,6 +52,6 @@
         "test": "phpunit",
         "test-coverage": "phpunit --coverage-html coverage"
     },
-    "minimum-stability": "stable",
+    "minimum-stability": "dev",
     "prefer-stable": true
 }
