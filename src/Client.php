@@ -4,8 +4,11 @@ namespace Mistral;
 
 use GuzzleHttp\Client as GuzzleClient;
 use GuzzleHttp\Exception\GuzzleException;
+use Mistral\Resources\Agents;
 use Mistral\Resources\Chat;
 use Mistral\Resources\Embeddings;
+use Mistral\Resources\Files;
+use Mistral\Resources\FineTuning;
 use Mistral\Resources\Models;
 
 class Client
@@ -43,6 +46,21 @@ class Client
     public function models(): Models
     {
         return new Models($this->client);
+    }
+
+    public function files(): Files
+    {
+        return new Files($this->client);
+    }
+
+    public function fineTuning(): FineTuning
+    {
+        return new FineTuning($this->client);
+    }
+
+    public function agents(): Agents
+    {
+        return new Agents($this->client);
     }
 
     /**
