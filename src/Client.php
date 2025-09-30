@@ -11,15 +11,16 @@ use Mistral\Resources\Embeddings;
 use Mistral\Resources\Files;
 use Mistral\Resources\FineTuning;
 use Mistral\Resources\Models;
-use Mistral\Mcp\MistralMcpServer;
+use Mistral\Mcp\McpClientManager;
+use Mistral\Mcp\McpEnabledChat;
 use Psr\Log\LoggerInterface;
-use Psr\Container\ContainerInterface;
 
 class Client
 {
     private GuzzleClient $client;
     private string $apiKey;
     private string $baseUrl;
+    private ?McpClientManager $mcpManager = null;
 
     public function __construct(string $apiKey, ?string $baseUrl = null)
     {
@@ -40,6 +41,21 @@ class Client
     public function chat(): Chat
     {
         return new Chat($this->client);
+    }
+
+    /**
+     * Get MCP-enabled chat resource
+     * 
+     * @param LoggerInterface|null $logger Optional logger for MCP operations
+     * @return McpEnabledChat
+     */
+    public function mcpChat(?LoggerInterface $logger = null): McpEnabledChat
+    {
+        if ($this->mcpManager === null) {
+            $this->mcpManager = new McpClientManager($logger);
+        }
+        
+        return new McpEnabledChat($this->client, $this->mcpManager, $logger);
     }
 
     public function embeddings(): Embeddings
@@ -99,16 +115,39 @@ class Client
     }
 
     /**
-     * Create an MCP server for this Mistral client
+     * Get or create MCP client manager
      * 
-     * @param LoggerInterface|null $logger Optional logger for the MCP server
-     * @param ContainerInterface|null $container Optional DI container
-     * @return MistralMcpServer
+     * @param LoggerInterface|null $logger Optional logger for MCP operations
+     * @return McpClientManager
      */
-    public function createMcpServer(
-        ?LoggerInterface $logger = null,
-        ?ContainerInterface $container = null
-    ): MistralMcpServer {
-        return new MistralMcpServer($this, $logger ?? new \Psr\Log\NullLogger(), $container);
+    public function getMcpManager(?LoggerInterface $logger = null): McpClientManager
+    {
+        if ($this->mcpManager === null) {
+            $this->mcpManager = new McpClientManager($logger);
+        }
+        
+        return $this->mcpManager;
+    }
+
+    /**
+     * Add an MCP server configuration
+     * 
+     * @param string $name Server identifier
+     * @param string $transport Transport type ('stdio' or 'http')
+     * @param array $config Configuration options
+     */
+    public function addMcpServer(string $name, string $transport, array $config): void
+    {
+        $this->getMcpManager()->addServer($name, $transport, $config);
+    }
+
+    /**
+     * Connect to an MCP server
+     * 
+     * @param string $serverName
+     */
+    public function connectToMcpServer(string $serverName): void
+    {
+        $this->getMcpManager()->connect($serverName);
     }
 }

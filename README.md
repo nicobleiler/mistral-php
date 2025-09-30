@@ -5,7 +5,7 @@ A comprehensive PHP client library for the Mistral AI API with Laravel support.
 ## Features
 
 - 🚀 Full Mistral AI API support (Chat Completions, Embeddings, Models, Conversations)
-- 🔌 Model Context Protocol (MCP) integration with standalone server
+- 🔌 Model Context Protocol (MCP) client integration for external tool calling
 - 🎯 Laravel integration with service provider and facade
 - 🔄 Streaming support for chat completions
 - 📝 Type-safe responses with PHP classes
@@ -368,104 +368,165 @@ $client->chat()->stream([
 });
 ```
 
-## Model Context Protocol (MCP) Integration
+## Model Context Protocol (MCP) Client Integration
 
-This package includes full support for the Model Context Protocol (MCP), allowing you to expose Mistral AI capabilities as MCP tools and resources.
+This package includes MCP client support, allowing Mistral AI to call external MCP tools during conversations. This enables powerful integrations with external services and tools.
 
 ### Quick Start with MCP
 
-The package provides a standalone MCP server that can be used by any MCP-compatible client:
-
-```bash
-# Set your API key
-export MISTRAL_API_KEY=your-api-key
-
-# Run the MCP server (stdio transport)
-php vendor/bin/mistral-mcp-server.php
-
-# Or run with HTTP transport
-php vendor/bin/mistral-mcp-server.php --transport=http --port=8080
-```
-
-### MCP Tools Available
-
-The MCP server exposes these tools:
-
-- **`mistral_chat`** - Generate chat completions with Mistral AI
-- **`mistral_embed`** - Generate text embeddings  
-- **`mistral_list_models`** - List available Mistral models
-- **`mistral_get_model`** - Get details about a specific model
-
-### MCP Resources Available
-
-- **`mistral://models/info`** - Information about Mistral models and capabilities
-- **`mistral://config/client`** - Current client configuration
-
-### Using MCP Programmatically
-
-You can also create and manage MCP servers programmatically:
+Connect to external MCP servers and use their tools in Mistral conversations:
 
 ```php
 use Mistral\Client;
-use Mistral\Mcp\MistralMcpServer;
 
-// Create client
 $client = new Client('your-api-key');
 
-// Create MCP server
-$mcpServer = $client->createMcpServer();
+// Add an MCP server (stdio transport)
+$client->addMcpServer('file-tools', 'stdio', [
+    'command' => 'python',
+    'args' => ['file_server.py'],
+    'working_dir' => '/path/to/server'
+]);
 
-// Run with stdio transport
-$mcpServer->runStdio();
+// Add an MCP server (HTTP transport)
+$client->addMcpServer('web-tools', 'http', [
+    'url' => 'http://localhost:8080'
+]);
 
-// Or run with HTTP transport
-$mcpServer->runHttp('127.0.0.1', 8080);
+// Use MCP-enabled chat
+$mcpChat = $client->mcpChat();
+
+// Connect to servers
+$mcpChat->connectToMcpServer('file-tools');
+$mcpChat->connectToMcpServer('web-tools');
+
+// Chat with access to MCP tools
+$response = $mcpChat->create([
+    'model' => 'mistral-large',
+    'messages' => [
+        ['role' => 'user', 'content' => 'Can you read the file config.json and summarize it?']
+    ]
+]);
+
+echo $response->choices[0]->message->content;
 ```
 
-### Laravel MCP Integration
+### Available MCP Tools
 
-In Laravel, you can access the MCP server through the service container:
+View available tools from connected MCP servers:
 
 ```php
-use Mistral\Facades\MistralMcp;
+$mcpChat = $client->mcpChat();
+$mcpChat->connectToMcpServer('file-tools');
 
-// Get the MCP server instance
-$mcpServer = app(MistralMcpServer::class);
-
-// Or use the facade
-MistralMcp::runStdio();
-```
-
-### MCP Server Command Options
-
-```bash
-php vendor/bin/mistral-mcp-server.php [options]
-
-Options:
-  --transport=stdio|http   Transport method (default: stdio)
-  --host=HOST             HTTP host (default: 127.0.0.1)  
-  --port=PORT             HTTP port (default: 8080)
-  --api-key=KEY           Mistral API key (or set MISTRAL_API_KEY env var)
-  --base-url=URL          Custom Mistral API base URL
-  --log-level=LEVEL       Log level (debug, info, warning, error)
-  --help                  Show help message
-```
-
-### MCP Client Integration
-
-To use this MCP server in an MCP client (like Claude Desktop), add it to your MCP configuration:
-
-```json
-{
-  "mcpServers": {
-    "mistral": {
-      "command": "php",
-      "args": ["vendor/bin/mistral-mcp-server.php"],
-      "env": {
-        "MISTRAL_API_KEY": "your-api-key"
-      }
+$tools = $mcpChat->getAvailableMcpTools();
+foreach ($tools as $serverName => $serverTools) {
+    echo "Server: {$serverName}\n";
+    foreach ($serverTools as $tool) {
+        echo "  - {$tool['name']}: {$tool['description']}\n";
     }
-  }
+}
+```
+
+### Manual Tool Execution
+
+You can also call MCP tools directly:
+
+```php
+$mcpManager = $client->getMcpManager();
+$mcpManager->addServer('calculator', 'stdio', [
+    'command' => 'python',
+    'args' => ['calculator_server.py']
+]);
+$mcpManager->connect('calculator');
+
+$result = $mcpManager->callTool('calculator', 'add', [
+    'a' => 5,
+    'b' => 3
+]);
+
+if ($result['success']) {
+    echo "Result: " . $result['content'];
+} else {
+    echo "Error: " . $result['error'];
+}
+```
+
+### MCP Server Configuration
+
+#### STDIO Transport (subprocess)
+```php
+$client->addMcpServer('my-server', 'stdio', [
+    'command' => 'python',           // Executable command
+    'args' => ['server.py'],         // Command arguments
+    'working_dir' => '/path/to/dir', // Working directory
+    'timeout' => 30,                 // Request timeout in seconds
+    'env' => [                       // Environment variables
+        'API_KEY' => 'secret'
+    ]
+]);
+```
+
+#### HTTP Transport
+```php
+$client->addMcpServer('my-server', 'http', [
+    'url' => 'http://localhost:8080', // Server URL
+    'timeout' => 30,                  // Request timeout
+    'headers' => [                    // Additional HTTP headers
+        'Authorization' => 'Bearer token'
+    ]
+]);
+```
+
+### Laravel Integration
+
+In Laravel, you can configure MCP servers in your service provider:
+
+```php
+use Mistral\Facades\Mistral;
+
+// In a service provider or controller
+$mcpChat = Mistral::mcpChat();
+$mcpChat->addMcpServer('tools', 'stdio', [
+    'command' => 'python',
+    'args' => [storage_path('mcp/tools_server.py')]
+]);
+
+$response = $mcpChat->create([
+    'model' => 'mistral-large',
+    'messages' => [
+        ['role' => 'user', 'content' => 'Use the weather tool to get current weather for Paris']
+    ]
+]);
+```
+
+### Automatic Tool Integration
+
+When using `mcpChat()`, available MCP tools are automatically added to the conversation context. Mistral can then choose to call these tools as needed during the conversation.
+
+The tool calls happen automatically:
+1. Mistral decides to use an MCP tool based on the conversation
+2. The tool is called on the appropriate MCP server
+3. The results are fed back to Mistral
+4. Mistral incorporates the results into its response
+
+### Error Handling
+
+MCP operations include comprehensive error handling:
+
+```php
+try {
+    $mcpChat = $client->mcpChat();
+    $mcpChat->connectToMcpServer('my-server');
+    
+    $response = $mcpChat->create([
+        'model' => 'mistral-large',
+        'messages' => [['role' => 'user', 'content' => 'Hello']]
+    ]);
+} catch (\PhpMcp\Client\Exception\McpClientException $e) {
+    echo "MCP Error: " . $e->getMessage();
+} catch (\Exception $e) {
+    echo "General Error: " . $e->getMessage();
 }
 ```
 
