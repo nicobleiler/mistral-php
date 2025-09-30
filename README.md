@@ -84,6 +84,27 @@ class ChatController extends Controller
         
         return response()->json($response);
     }
+    
+    public function uploadTrainingFile(Request $request)
+    {
+        $file = $this->mistral->files()->upload([
+            'file' => $request->file('training_file')->getRealPath(),
+            'purpose' => 'fine-tune'
+        ]);
+        
+        return response()->json($file);
+    }
+    
+    public function createFineTuneJob(Request $request)
+    {
+        $job = $this->mistral->fineTuning()->create([
+            'model' => $request->get('base_model', 'mistral-tiny'),
+            'training_file' => $request->get('training_file_id'),
+            'hyperparameters' => $request->get('hyperparameters', [])
+        ]);
+        
+        return response()->json($job);
+    }
 }
 ```
 
@@ -121,6 +142,143 @@ $models = $client->models()->list();
 
 // Get specific model
 $model = $client->models()->get('mistral-tiny');
+```
+
+### Files
+
+Upload and manage files for use with fine-tuning:
+
+```php
+// Upload a file
+$file = $client->files()->upload([
+    'file' => '/path/to/training-data.jsonl',
+    'purpose' => 'fine-tune'
+]);
+
+// List files
+$files = $client->files()->list();
+
+// Retrieve a file
+$fileInfo = $client->files()->retrieve($file['id']);
+
+// Download file content
+$content = $client->files()->download($file['id']);
+
+// Delete a file
+$deleted = $client->files()->delete($file['id']);
+```
+
+### Fine-tuning
+
+Create and manage fine-tuning jobs:
+
+```php
+// Create a fine-tuning job
+$job = $client->fineTuning()->create([
+    'model' => 'mistral-tiny',
+    'training_file' => $file['id'],
+    'hyperparameters' => [
+        'n_epochs' => 4,
+        'batch_size' => 32,
+        'learning_rate' => 0.0001
+    ]
+]);
+
+// List fine-tuning jobs
+$jobs = $client->fineTuning()->list();
+
+// Retrieve a job
+$jobInfo = $client->fineTuning()->retrieve($job['id']);
+
+// Cancel a job
+$cancelled = $client->fineTuning()->cancel($job['id']);
+
+// List job events
+$events = $client->fineTuning()->listEvents($job['id']);
+```
+
+### Agents
+
+Create and manage conversational AI agents:
+
+```php
+// Create an agent
+$agent = $client->agents()->create([
+    'model' => 'mistral-large',
+    'name' => 'Math Tutor',
+    'description' => 'A helpful math tutoring agent',
+    'instructions' => 'You are a personal math tutor. Help students with math problems step by step.',
+    'tools' => [
+        [
+            'type' => 'function',
+            'function' => [
+                'name' => 'calculate',
+                'description' => 'Perform mathematical calculations',
+                'parameters' => [
+                    'type' => 'object',
+                    'properties' => [
+                        'expression' => ['type' => 'string']
+                    ]
+                ]
+            ]
+        ]
+    ]
+]);
+
+// List agents
+$agents = $client->agents()->list();
+
+// Retrieve an agent
+$agentInfo = $client->agents()->retrieve($agent['id']);
+
+// Update an agent
+$updated = $client->agents()->update($agent['id'], [
+    'name' => 'Advanced Math Tutor',
+    'instructions' => 'You are an advanced math tutor specializing in calculus and linear algebra.'
+]);
+
+// Delete an agent
+$deleted = $client->agents()->delete($agent['id']);
+```
+
+## Type Safety
+
+This package includes comprehensive PHP type annotations for all API methods. IDE autocompletion and static analysis tools will provide full type checking for:
+
+- **Input parameters**: All method parameters are typed with detailed array shapes
+- **Return values**: Complete response structure typing for all API responses
+- **Optional parameters**: Proper optional parameter handling with default values
+- **Union types**: Support for parameters that accept multiple types (e.g., `string|array<string>`)
+
+Example with full type support:
+
+```php
+// Parameters are fully typed - your IDE will show available options
+$response = $client->chat()->create([
+    'model' => 'mistral-tiny',              // string (required)
+    'messages' => [                         // array<array{role: string, content: string, name?: string}>
+        [
+            'role' => 'user',               // 'user'|'assistant'|'system'
+            'content' => 'Hello world',     // string
+            'name' => 'user123'             // string (optional)
+        ]
+    ],
+    'temperature' => 0.7,                   // float (optional)
+    'max_tokens' => 100,                    // int (optional)
+    'tools' => [                            // array<array{type: string, function: array}> (optional)
+        [
+            'type' => 'function',
+            'function' => [
+                'name' => 'get_weather',
+                'description' => 'Get current weather',
+                'parameters' => [/* ... */]
+            ]
+        ]
+    ]
+]);
+
+// Return value is also fully typed
+echo $response['choices'][0]['message']['content']; // IDE knows this is a string
 ```
 
 ## API Reference

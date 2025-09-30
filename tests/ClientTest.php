@@ -35,6 +35,27 @@ class ClientTest extends TestCase
         $this->assertInstanceOf(\Mistral\Resources\Models::class, $client->models());
     }
 
+    public function test_client_has_files_resource()
+    {
+        $client = new Client('test-api-key');
+        
+        $this->assertInstanceOf(\Mistral\Resources\Files::class, $client->files());
+    }
+
+    public function test_client_has_fine_tuning_resource()
+    {
+        $client = new Client('test-api-key');
+        
+        $this->assertInstanceOf(\Mistral\Resources\FineTuning::class, $client->fineTuning());
+    }
+
+    public function test_client_has_agents_resource()
+    {
+        $client = new Client('test-api-key');
+        
+        $this->assertInstanceOf(\Mistral\Resources\Agents::class, $client->agents());
+    }
+
     public function test_client_uses_custom_base_url()
     {
         $customUrl = 'https://custom.api.com/v1';

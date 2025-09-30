@@ -17,7 +17,18 @@ class Models
     /**
      * List available models
      *
-     * @return array
+     * @return array{
+     *     object: string,
+     *     data: array<array{
+     *         id: string,
+     *         object: string,
+     *         created: int,
+     *         owned_by: string,
+     *         permissions?: array,
+     *         root?: string,
+     *         parent?: string
+     *     }>
+     * }
      * @throws GuzzleException
      */
     public function list(): array
@@ -31,12 +42,20 @@ class Models
      * Get a specific model
      *
      * @param string $modelId
-     * @return array
+     * @return array{
+     *     id: string,
+     *     object: string,
+     *     created: int,
+     *     owned_by: string,
+     *     permissions?: array,
+     *     root?: string,
+     *     parent?: string
+     * }
      * @throws GuzzleException
      */
     public function get(string $modelId): array
     {
-        $response = $this->client->request('GET', "/models/{$modelId}");
+        $response = $this->client->request('GET', "/v1/models/{$modelId}");
 
         return json_decode($response->getBody()->getContents(), true);
     }
