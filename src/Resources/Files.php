@@ -46,9 +46,14 @@ class Files
                 'contents' => $params['file']
             ];
         } else {
+            // Handle file path - check if file exists first
+            if (!file_exists($params['file'])) {
+                throw new \InvalidArgumentException("File not found: {$params['file']}");
+            }
             $multipart[] = [
                 'name' => 'file',
-                'contents' => fopen($params['file'], 'r')
+                'contents' => fopen($params['file'], 'r'),
+                'filename' => basename($params['file'])
             ];
         }
 
