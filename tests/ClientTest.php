@@ -56,6 +56,13 @@ class ClientTest extends TestCase
         $this->assertInstanceOf(\Mistral\Resources\Agents::class, $client->agents());
     }
 
+    public function test_client_has_conversations_resource()
+    {
+        $client = new Client('test-api-key');
+        
+        $this->assertInstanceOf(\Mistral\Resources\Conversations::class, $client->conversations());
+    }
+
     public function test_client_uses_custom_base_url()
     {
         $customUrl = 'https://custom.api.com/v1';

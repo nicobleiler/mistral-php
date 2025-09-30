@@ -4,6 +4,8 @@ namespace Mistral\Resources;
 
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\GuzzleException;
+use Mistral\Types\Chat\ChatRequest;
+use Mistral\Types\Chat\ChatResponse;
 
 class Chat
 {
@@ -17,138 +19,38 @@ class Chat
     /**
      * Create a chat completion
      *
-     * @param array{
-     *     model: string,
-     *     messages: array<array{
-     *         role: string,
-     *         content: string,
-     *         name?: string
-     *     }>,
-     *     functions?: array<array{
-     *         name: string,
-     *         description?: string,
-     *         parameters?: array
-     *     }>,
-     *     function_call?: string|array{name: string},
-     *     temperature?: float,
-     *     top_p?: float,
-     *     n?: int,
-     *     stream?: bool,
-     *     stop?: string|array<string>,
-     *     max_tokens?: int,
-     *     presence_penalty?: float,
-     *     frequency_penalty?: float,
-     *     logit_bias?: array<string, float>,
-     *     user?: string,
-     *     response_format?: array{type: string},
-     *     seed?: int,
-     *     tools?: array<array{
-     *         type: string,
-     *         function: array{
-     *             name: string,
-     *             description?: string,
-     *             parameters?: array
-     *         }
-     *     }>,
-     *     tool_choice?: string|array{type: string, function: array{name: string}}
-     * } $params
-     * @return array{
-     *     id: string,
-     *     object: string,
-     *     created: int,
-     *     model: string,
-     *     choices: array<array{
-     *         index: int,
-     *         message: array{
-     *             role: string,
-     *             content?: string,
-     *             function_call?: array{name: string, arguments: string},
-     *             tool_calls?: array<array{
-     *                 id: string,
-     *                 type: string,
-     *                 function: array{name: string, arguments: string}
-     *             }>
-     *         },
-     *         finish_reason?: string
-     *     }>,
-     *     usage: array{
-     *         prompt_tokens: int,
-     *         completion_tokens: int,
-     *         total_tokens: int
-     *     }
-     * }
+     * @param ChatRequest|array $params
+     * @return ChatResponse
      * @throws GuzzleException
      */
-    public function create(array $params): array
+    public function create(ChatRequest|array $params): ChatResponse
     {
+        if (is_array($params)) {
+            $params = ChatRequest::fromArray($params);
+        }
+
         $response = $this->client->request('POST', '/v1/chat/completions', [
-            'json' => $params
+            'json' => $params->toArray()
         ]);
 
-        return json_decode($response->getBody()->getContents(), true);
+        $data = json_decode($response->getBody()->getContents(), true);
+        return ChatResponse::fromArray($data);
     }
 
     /**
      * Create a streaming chat completion
      *
-     * @param array{
-     *     model: string,
-     *     messages: array<array{
-     *         role: string,
-     *         content: string,
-     *         name?: string
-     *     }>,
-     *     functions?: array<array{
-     *         name: string,
-     *         description?: string,
-     *         parameters?: array
-     *     }>,
-     *     function_call?: string|array{name: string},
-     *     temperature?: float,
-     *     top_p?: float,
-     *     n?: int,
-     *     stop?: string|array<string>,
-     *     max_tokens?: int,
-     *     presence_penalty?: float,
-     *     frequency_penalty?: float,
-     *     logit_bias?: array<string, float>,
-     *     user?: string,
-     *     tools?: array<array{
-     *         type: string,
-     *         function: array{
-     *             name: string,
-     *             description?: string,
-     *             parameters?: array
-     *         }
-     *     }>,
-     *     tool_choice?: string|array{type: string, function: array{name: string}}
-     * } $params
-     * @param callable(array{
-     *     id: string,
-     *     object: string,
-     *     created: int,
-     *     model: string,
-     *     choices: array<array{
-     *         index: int,
-     *         delta: array{
-     *             role?: string,
-     *             content?: string,
-     *             function_call?: array{name?: string, arguments?: string},
-     *             tool_calls?: array<array{
-     *                 index?: int,
-     *                 id?: string,
-     *                 type?: string,
-     *                 function?: array{name?: string, arguments?: string}
-     *             }>
-     *         },
-     *         finish_reason?: string
-     *     }>
-     * }): void $callback
+     * @param ChatRequest|array $params
+     * @param callable(array): void $callback
      * @return void
      * @throws GuzzleException
      */
-    public function stream(array $params, callable $callback): void
+    public function stream(ChatRequest|array $params, callable $callback): void
     {
+        if ($params instanceof ChatRequest) {
+            $params = $params->toArray();
+        }
+        
         $params['stream'] = true;
 
         $response = $this->client->request('POST', '/v1/chat/completions', [

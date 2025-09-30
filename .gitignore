@@ -1,8 +1,8 @@
 /vendor/
 /node_modules/
-/.env
-/.env.backup
-/.phpunit.result.cache
+.env
+.env.backup
+.phpunit.result.cache
 /composer.phar
 composer.lock
 .DS_Store
@@ -12,3 +12,4 @@ Thumbs.db
 /.vscode
 /.coverage
 .phpunit.cache
+example.php
