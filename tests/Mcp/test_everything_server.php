@@ -4,11 +4,13 @@
  * Example: Testing with the MCP Everything Server
  * 
  * This example shows how to interact with the @modelcontextprotocol/server-everything
+ * using npx (no global installation required).
+ * 
  * Note: Due to a bug in the PHP MCP SDK (v1.2.3) with notification handling,
- * this may encounter errors. Use the simple_mcp_server.php for reliable testing.
+ * connection attempts will fail with a TypeError. This script demonstrates the issue.
  * 
  * Prerequisites:
- * - npm install -g @modelcontextprotocol/server-everything
+ * - Node.js and npx installed
  */
 
 require_once __DIR__ . '/../../vendor/autoload.php';
@@ -18,29 +20,29 @@ use Psr\Log\NullLogger;
 
 echo "=== MCP Everything Server Test ===\n\n";
 echo "Note: The PHP MCP SDK has a known issue with notification handling.\n";
-echo "This test demonstrates the issue and why we use simple_mcp_server.php instead.\n\n";
+echo "This test demonstrates the issue when connecting to server-everything.\n\n";
 
 $manager = new McpClientManager(new NullLogger());
 
-// Check if mcp-server-everything is available
-$checkCommand = 'which mcp-server-everything 2>&1';
+// Check if npx is available
+$checkCommand = 'which npx 2>&1';
 exec($checkCommand, $output, $returnCode);
 
 if ($returnCode !== 0) {
-    echo "ERROR: mcp-server-everything not found.\n";
-    echo "Install it with: npm install -g @modelcontextprotocol/server-everything\n";
+    echo "ERROR: npx not found.\n";
+    echo "Install Node.js which includes npx: https://nodejs.org/\n";
     exit(1);
 }
 
-echo "✓ Found mcp-server-everything at: " . trim($output[0]) . "\n\n";
+echo "✓ Found npx at: " . trim($output[0]) . "\n\n";
 
-// Add the everything server
+// Add the everything server using npx
 $manager->addServer('everything', 'stdio', [
-    'command' => 'mcp-server-everything',
-    'args' => ['stdio'],
+    'command' => 'npx',
+    'args' => ['--yes', '@modelcontextprotocol/server-everything', 'stdio'],
 ]);
 
-echo "Connecting to MCP everything server...\n";
+echo "Connecting to MCP everything server via npx...\n";
 
 try {
     $manager->connect('everything');
@@ -62,10 +64,11 @@ try {
     } catch (\TypeError $e) {
         echo "\n✗ EXPECTED ERROR: Notification type incompatibility in PHP MCP SDK\n";
         echo "Error: " . $e->getMessage() . "\n\n";
-        echo "This is why we use simple_mcp_server.php for testing instead.\n";
+        echo "This is the known SDK bug with server-everything.\n";
         echo "The everything server sends logging notifications that cause type errors\n";
         echo "in the current version of logiscape/mcp-sdk-php (v1.2.3).\n\n";
-        echo "Our simple_mcp_server.php avoids this by not sending notifications.\n";
+        echo "Server-everything sends: LoggingMessageNotificationParams\n";
+        echo "SDK expects: NotificationParams\n";
     }
     
     echo "\nDisconnecting...\n";
@@ -77,6 +80,9 @@ try {
     echo "Trace: " . $e->getTraceAsString() . "\n";
 }
 
-echo "\n=== Recommendation ===\n";
-echo "For reliable MCP testing, use tests/Mcp/simple_mcp_server.php\n";
-echo "See tests/Mcp/README.md for more information.\n";
+echo "\n=== Summary ===\n";
+echo "The @modelcontextprotocol/server-everything is accessible via npx.\n";
+echo "However, the current PHP MCP SDK (logiscape/mcp-sdk-php v1.2.3) has\n";
+echo "incompatibilities with the notification system used by server-everything.\n\n";
+echo "The integration tests in McpIntegrationTest.php document the expected\n";
+echo "behavior once the SDK is updated to handle these notifications correctly.\n";
