@@ -2,8 +2,15 @@
 
 namespace Nicobleiler\Mistral\Tests;
 
+use Nicobleiler\Mistral\Resources\Embeddings;
 use PHPUnit\Framework\TestCase;
 use Nicobleiler\Mistral\Client;
+use Nicobleiler\Mistral\Resources\Agents;
+use Nicobleiler\Mistral\Resources\Chat;
+use Nicobleiler\Mistral\Resources\Conversations;
+use Nicobleiler\Mistral\Resources\Files;
+use Nicobleiler\Mistral\Resources\FineTuning;
+use Nicobleiler\Mistral\Resources\Models;
 
 class ClientTest extends TestCase
 {
@@ -18,49 +25,49 @@ class ClientTest extends TestCase
     {
         $client = new Client('test-api-key');
 
-        $this->assertInstanceOf(\Mistral\Resources\Chat::class, $client->chat());
+        $this->assertInstanceOf(Chat::class, $client->chat());
     }
 
     public function test_client_has_embeddings_resource()
     {
         $client = new Client('test-api-key');
 
-        $this->assertInstanceOf(\Mistral\Resources\Embeddings::class, $client->embeddings());
+        $this->assertInstanceOf(Embeddings::class, $client->embeddings());
     }
 
     public function test_client_has_models_resource()
     {
         $client = new Client('test-api-key');
 
-        $this->assertInstanceOf(\Mistral\Resources\Models::class, $client->models());
+        $this->assertInstanceOf(Models::class, $client->models());
     }
 
     public function test_client_has_files_resource()
     {
         $client = new Client('test-api-key');
 
-        $this->assertInstanceOf(\Mistral\Resources\Files::class, $client->files());
+        $this->assertInstanceOf(Files::class, $client->files());
     }
 
     public function test_client_has_fine_tuning_resource()
     {
         $client = new Client('test-api-key');
 
-        $this->assertInstanceOf(\Mistral\Resources\FineTuning::class, $client->fineTuning());
+        $this->assertInstanceOf(FineTuning::class, $client->fineTuning());
     }
 
     public function test_client_has_agents_resource()
     {
         $client = new Client('test-api-key');
 
-        $this->assertInstanceOf(\Mistral\Resources\Agents::class, $client->agents());
+        $this->assertInstanceOf(Agents::class, $client->agents());
     }
 
     public function test_client_has_conversations_resource()
     {
         $client = new Client('test-api-key');
 
-        $this->assertInstanceOf(\Mistral\Resources\Conversations::class, $client->conversations());
+        $this->assertInstanceOf(Conversations::class, $client->conversations());
     }
 
     public function test_client_uses_custom_base_url()
