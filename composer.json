@@ -30,21 +30,21 @@
     },
     "autoload": {
         "psr-4": {
-            "Mistral\\": "src/"
+            "Nicobleiler\\Mistral\\": "src/"
         }
     },
     "autoload-dev": {
         "psr-4": {
-            "Mistral\\Tests\\": "tests/"
+            "Nicobleiler\\Mistral\\Tests\\": "tests/"
         }
     },
     "extra": {
         "laravel": {
             "providers": [
-                "Mistral\\MistralServiceProvider"
+                "Nicobleiler\\Mistral\\MistralServiceProvider"
             ],
             "aliases": {
-                "Mistral": "Mistral\\Facades\\Mistral"
+                "Mistral": "Nicobleiler\\Mistral\\Facades\\Mistral"
             }
         }
     },
