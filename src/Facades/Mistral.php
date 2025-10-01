@@ -1,6 +1,6 @@
 <?php
 
-namespace Mistral\Facades;
+namespace Nicobleiler\Mistral\Facades;
 
 use Illuminate\Support\Facades\Facade;
 

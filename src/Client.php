@@ -1,18 +1,18 @@
 <?php
 
-namespace Mistral;
+namespace Nicobleiler\Mistral;
 
 use GuzzleHttp\Client as GuzzleClient;
 use GuzzleHttp\Exception\GuzzleException;
-use Mistral\Resources\Agents;
-use Mistral\Resources\Chat;
-use Mistral\Resources\Conversations;
-use Mistral\Resources\Embeddings;
-use Mistral\Resources\Files;
-use Mistral\Resources\FineTuning;
-use Mistral\Resources\Models;
-use Mistral\Mcp\McpClientManager;
-use Mistral\Mcp\McpEnabledChat;
+use Nicobleiler\Mistral\Resources\Agents;
+use Nicobleiler\Mistral\Resources\Chat;
+use Nicobleiler\Mistral\Resources\Conversations;
+use Nicobleiler\Mistral\Resources\Embeddings;
+use Nicobleiler\Mistral\Resources\Files;
+use Nicobleiler\Mistral\Resources\FineTuning;
+use Nicobleiler\Mistral\Resources\Models;
+use Nicobleiler\Mistral\Mcp\McpClientManager;
+use Nicobleiler\Mistral\Mcp\McpEnabledChat;
 use Psr\Log\LoggerInterface;
 
 class Client
@@ -26,7 +26,7 @@ class Client
     {
         $this->apiKey = $apiKey;
         $this->baseUrl = $baseUrl ?? 'https://api.mistral.ai/v1';
-        
+
         $this->client = new GuzzleClient([
             'base_uri' => $this->baseUrl,
             'headers' => [
@@ -54,7 +54,7 @@ class Client
         if ($this->mcpManager === null) {
             $this->mcpManager = new McpClientManager($logger);
         }
-        
+
         return new McpEnabledChat($this->client, $this->mcpManager, $logger);
     }
 
@@ -100,7 +100,7 @@ class Client
     public function request(string $method, string $endpoint, array $data = []): array
     {
         $options = [];
-        
+
         if (!empty($data)) {
             if (strtoupper($method) === 'GET') {
                 $options['query'] = $data;
@@ -110,7 +110,7 @@ class Client
         }
 
         $response = $this->client->request($method, $endpoint, $options);
-        
+
         return json_decode($response->getBody()->getContents(), true);
     }
 
@@ -125,7 +125,7 @@ class Client
         if ($this->mcpManager === null) {
             $this->mcpManager = new McpClientManager($logger);
         }
-        
+
         return $this->mcpManager;
     }
 

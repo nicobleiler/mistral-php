@@ -1,6 +1,6 @@
 <?php
 
-namespace Mistral\Types\Chat;
+namespace Nicobleiler\Mistral\Types\Chat;
 
 class Choice
 {

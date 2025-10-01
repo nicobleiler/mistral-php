@@ -1,6 +1,6 @@
 <?php
 
-namespace Mistral\Types\Conversations;
+namespace Nicobleiler\Mistral\Types\Conversations;
 
 class Conversation
 {

@@ -1,11 +1,11 @@
 <?php
 
-namespace Mistral\Resources;
+namespace Nicobleiler\Mistral\Resources;
 
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\GuzzleException;
-use Mistral\Types\Conversations\Conversation;
-use Mistral\Types\Conversations\ConversationRequest;
+use Nicobleiler\Mistral\Types\Conversations\Conversation;
+use Nicobleiler\Mistral\Types\Conversations\ConversationRequest;
 
 class Conversations
 {
@@ -76,7 +76,7 @@ class Conversations
         ]);
 
         $data = json_decode($response->getBody()->getContents(), true);
-        
+
         return [
             'object' => $data['object'] ?? 'list',
             'data' => array_map(fn($item) => Conversation::fromArray($item), $data['data'] ?? []),

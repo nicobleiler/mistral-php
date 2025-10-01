@@ -1,12 +1,12 @@
 <?php
 
-namespace Mistral\Tests\Resources;
+namespace Nicobleiler\Mistral\Tests\Resources;
 
 use PHPUnit\Framework\TestCase;
-use Mistral\Resources\Chat;
-use Mistral\Types\Chat\ChatRequest;
-use Mistral\Types\Chat\ChatResponse;
-use Mistral\Types\Chat\Message;
+use Nicobleiler\Mistral\Resources\Chat;
+use Nicobleiler\Mistral\Types\Chat\ChatRequest;
+use Nicobleiler\Mistral\Types\Chat\ChatResponse;
+use Nicobleiler\Mistral\Types\Chat\Message;
 use GuzzleHttp\Client;
 use GuzzleHttp\Psr7\Response;
 use Mockery;
@@ -22,7 +22,7 @@ class ChatTest extends TestCase
     {
         $client = Mockery::mock(Client::class);
         $chat = new Chat($client);
-        
+
         $this->assertInstanceOf(Chat::class, $chat);
     }
 
@@ -132,7 +132,19 @@ class ChatTest extends TestCase
         $mockBody = Mockery::mock(\Psr\Http\Message\StreamInterface::class);
         $mockBody->shouldReceive('eof')->andReturn(false, false, true);
         $mockBody->shouldReceive('read')->with(1)->andReturn(
-            'd', 'a', 't', 'a', ':', ' ', '[', 'D', 'O', 'N', 'E', ']', "\n"
+            'd',
+            'a',
+            't',
+            'a',
+            ':',
+            ' ',
+            '[',
+            'D',
+            'O',
+            'N',
+            'E',
+            ']',
+            "\n"
         );
 
         $mockResponse = Mockery::mock(\Psr\Http\Message\ResponseInterface::class);
@@ -147,8 +159,8 @@ class ChatTest extends TestCase
 
         $chat = new Chat($client);
         $callbackCalled = false;
-        
-        $chat->stream($params, function($chunk) use (&$callbackCalled) {
+
+        $chat->stream($params, function ($chunk) use (&$callbackCalled) {
             $callbackCalled = true;
         });
 

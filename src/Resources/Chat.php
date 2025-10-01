@@ -1,11 +1,11 @@
 <?php
 
-namespace Mistral\Resources;
+namespace Nicobleiler\Mistral\Resources;
 
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\GuzzleException;
-use Mistral\Types\Chat\ChatRequest;
-use Mistral\Types\Chat\ChatResponse;
+use Nicobleiler\Mistral\Types\Chat\ChatRequest;
+use Nicobleiler\Mistral\Types\Chat\ChatResponse;
 
 class Chat
 {
@@ -50,7 +50,7 @@ class Chat
         if ($params instanceof ChatRequest) {
             $params = $params->toArray();
         }
-        
+
         $params['stream'] = true;
 
         $response = $this->client->request('POST', '/v1/chat/completions', [

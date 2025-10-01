@@ -1,9 +1,9 @@
 <?php
 
-namespace Mistral\Tests\Resources;
+namespace Nicobleiler\Mistral\Tests\Resources;
 
 use PHPUnit\Framework\TestCase;
-use Mistral\Resources\Agents;
+use Nicobleiler\Mistral\Resources\Agents;
 use GuzzleHttp\Client;
 use GuzzleHttp\Psr7\Response;
 use Mockery;
@@ -19,7 +19,7 @@ class AgentsTest extends TestCase
     {
         $client = Mockery::mock(Client::class);
         $agents = new Agents($client);
-        
+
         $this->assertInstanceOf(Agents::class, $agents);
     }
 

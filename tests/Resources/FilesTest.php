@@ -1,9 +1,9 @@
 <?php
 
-namespace Mistral\Tests\Resources;
+namespace Nicobleiler\Mistral\Tests\Resources;
 
 use PHPUnit\Framework\TestCase;
-use Mistral\Resources\Files;
+use Nicobleiler\Mistral\Resources\Files;
 use GuzzleHttp\Client;
 use GuzzleHttp\Psr7\Response;
 use Mockery;
@@ -19,7 +19,7 @@ class FilesTest extends TestCase
     {
         $client = Mockery::mock(Client::class);
         $files = new Files($client);
-        
+
         $this->assertInstanceOf(Files::class, $files);
     }
 
@@ -38,22 +38,22 @@ class FilesTest extends TestCase
         $client->shouldReceive('request')
             ->once()
             ->with('POST', '/v1/files', Mockery::on(function ($options) {
-                return isset($options['multipart']) && 
-                       count($options['multipart']) === 2;
+                return isset($options['multipart']) &&
+                    count($options['multipart']) === 2;
             }))
             ->andReturn(new Response(200, [], $expectedResponse));
 
         $files = new Files($client);
-        
+
         // Create a temporary file for testing
         $tempFile = tempnam(sys_get_temp_dir(), 'test_upload_');
         file_put_contents($tempFile, '{"input": "test", "output": "test"}');
-        
+
         $result = $files->upload([
             'file' => $tempFile,
             'purpose' => 'fine-tune'
         ]);
-        
+
         // Clean up temp file
         unlink($tempFile);
 
@@ -132,7 +132,7 @@ class FilesTest extends TestCase
 
         $this->assertTrue($result['deleted']);
     }
-    
+
     public function test_files_upload_with_resource_sends_correct_request()
     {
         $client = Mockery::mock(Client::class);
@@ -148,23 +148,23 @@ class FilesTest extends TestCase
         $client->shouldReceive('request')
             ->once()
             ->with('POST', '/v1/files', Mockery::on(function ($options) {
-                return isset($options['multipart']) && 
-                       count($options['multipart']) === 2;
+                return isset($options['multipart']) &&
+                    count($options['multipart']) === 2;
             }))
             ->andReturn(new Response(200, [], $expectedResponse));
 
         $files = new Files($client);
-        
+
         // Create a resource for testing
         $resource = fopen('php://memory', 'r+');
         fwrite($resource, '{"input": "test", "output": "test"}');
         rewind($resource);
-        
+
         $result = $files->upload([
             'file' => $resource,
             'purpose' => 'fine-tune'
         ]);
-        
+
         fclose($resource);
 
         $this->assertEquals('file-xyz789', $result['id']);

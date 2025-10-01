@@ -1,9 +1,9 @@
 <?php
 
-namespace Mistral\Tests\Resources;
+namespace Nicobleiler\Mistral\Tests\Resources;
 
 use PHPUnit\Framework\TestCase;
-use Mistral\Resources\FineTuning;
+use Nicobleiler\Mistral\Resources\FineTuning;
 use GuzzleHttp\Client;
 use GuzzleHttp\Psr7\Response;
 use Mockery;
@@ -19,7 +19,7 @@ class FineTuningTest extends TestCase
     {
         $client = Mockery::mock(Client::class);
         $fineTuning = new FineTuning($client);
-        
+
         $this->assertInstanceOf(FineTuning::class, $fineTuning);
     }
 

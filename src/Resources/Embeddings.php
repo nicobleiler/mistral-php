@@ -1,6 +1,6 @@
 <?php
 
-namespace Mistral\Resources;
+namespace Nicobleiler\Mistral\Resources;
 
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\GuzzleException;

@@ -42,7 +42,7 @@ MISTRAL_API_KEY=your-api-key-here
 ### Basic Usage
 
 ```php
-use Mistral\Client;
+use Nicobleiler\Mistral\Client;
 
 $client = new Client('your-api-key');
 
@@ -60,7 +60,7 @@ echo $response['choices'][0]['message']['content'];
 ### Laravel Usage
 
 ```php
-use Mistral\Facades\Mistral;
+use Nicobleiler\Mistral\Facades\Mistral;
 
 // Using the facade
 $response = Mistral::chat()->create([
@@ -71,7 +71,7 @@ $response = Mistral::chat()->create([
 ]);
 
 // Or inject the client
-use Mistral\Client;
+use Nicobleiler\Mistral\Client;
 
 class ChatController extends Controller 
 {
@@ -255,8 +255,8 @@ This package includes comprehensive PHP type safety through actual PHP classes, 
 Example with full type support:
 
 ```php
-use Mistral\Types\Chat\ChatRequest;
-use Mistral\Types\Chat\Message;
+use Nicobleiler\Mistral\Types\Chat\ChatRequest;
+use Nicobleiler\Mistral\Types\Chat\Message;
 
 // Create typed request objects
 $messages = [
@@ -300,8 +300,8 @@ $response = $client->chat()->create([
 ]);
 
 // Using typed objects (recommended for new code)
-use Mistral\Types\Chat\ChatRequest;
-use Mistral\Types\Chat\Message;
+use Nicobleiler\Mistral\Types\Chat\ChatRequest;
+use Nicobleiler\Mistral\Types\Chat\Message;
 
 $messages = [
     new Message('system', 'You are a helpful assistant.'),
@@ -324,7 +324,7 @@ echo $response->choices[0]->message->content; // Full IDE autocompletion
 Manage conversations with AI agents:
 
 ```php
-use Mistral\Types\Conversations\ConversationRequest;
+use Nicobleiler\Mistral\Types\Conversations\ConversationRequest;
 
 // Create a conversation
 $request = new ConversationRequest(
@@ -377,7 +377,7 @@ This package includes MCP client support using the `logiscape/mcp-sdk-php` packa
 Connect to external MCP servers and use their tools in Mistral conversations:
 
 ```php
-use Mistral\Client;
+use Nicobleiler\Mistral\Client;
 
 $client = new Client('your-api-key');
 
@@ -483,7 +483,7 @@ $client->addMcpServer('my-server', 'http', [
 In Laravel, you can configure MCP servers in your service provider:
 
 ```php
-use Mistral\Facades\Mistral;
+use Nicobleiler\Mistral\Facades\Mistral;
 
 // In a service provider or controller
 $mcpChat = Mistral::mcpChat();

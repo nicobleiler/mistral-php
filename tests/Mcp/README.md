@@ -66,7 +66,7 @@ You can manually test the everything server:
 <?php
 require_once 'vendor/autoload.php';
 
-use Mistral\Mcp\McpClientManager;
+use Nicobleiler\Mistral\Mcp\McpClientManager;
 
 $manager = new McpClientManager();
 $manager->addServer('everything', 'stdio', [

@@ -1,10 +1,10 @@
 <?php
 
-namespace Mistral\Mcp;
+namespace Nicobleiler\Mistral\Mcp;
 
-use Mistral\Resources\Chat as BaseChat;
-use Mistral\Types\Chat\ChatRequest;
-use Mistral\Types\Chat\ChatResponse;
+use Nicobleiler\Mistral\Resources\Chat as BaseChat;
+use Nicobleiler\Mistral\Types\Chat\ChatRequest;
+use Nicobleiler\Mistral\Types\Chat\ChatResponse;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\GuzzleException;
 use Psr\Log\LoggerInterface;
@@ -39,7 +39,7 @@ class McpEnabledChat extends BaseChat
     {
         // Convert to array for internal processing if needed
         $paramsArray = is_array($params) ? $params : $params->toArray();
-        
+
         // Add available MCP tools to the request
         $paramsArray = $this->addMcpToolsToRequest($paramsArray);
 
@@ -71,7 +71,7 @@ class McpEnabledChat extends BaseChat
                         'parameters' => $tool['inputSchema'] ?: ['type' => 'object', 'properties' => []]
                     ]
                 ];
-                
+
                 $tools[] = $mistralTool;
             }
         }
@@ -107,7 +107,7 @@ class McpEnabledChat extends BaseChat
                         'arguments' => $toolCall->function->arguments
                     ]
                 ]);
-                
+
                 $toolCallMessages[] = [
                     'role' => 'tool',
                     'tool_call_id' => $toolCall->id,

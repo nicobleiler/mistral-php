@@ -1,11 +1,11 @@
 <?php
 
-namespace Mistral\Tests\Mcp;
+namespace Nicobleiler\Mistral\Tests\Mcp;
 
 use PHPUnit\Framework\TestCase;
-use Mistral\Client;
-use Mistral\Mcp\McpClientManager;
-use Mistral\Mcp\McpEnabledChat;
+use Nicobleiler\Mistral\Client;
+use Nicobleiler\Mistral\Mcp\McpClientManager;
+use Nicobleiler\Mistral\Mcp\McpEnabledChat;
 use Psr\Log\NullLogger;
 use Mockery;
 
@@ -20,7 +20,7 @@ class McpClientTest extends TestCase
     public function test_can_create_mcp_client_manager()
     {
         $manager = new McpClientManager();
-        
+
         $this->assertInstanceOf(McpClientManager::class, $manager);
         $this->assertEmpty($manager->getConnectedServers());
     }
@@ -28,13 +28,13 @@ class McpClientTest extends TestCase
     public function test_can_add_server_configuration()
     {
         $manager = new McpClientManager();
-        
+
         $manager->addServer('test-server', 'stdio', [
             'command' => 'php',
             'args' => ['server.php'],
             'timeout' => 30
         ]);
-        
+
         // We can test the server info is stored
         $info = $manager->getServerInfo('test-server');
         $this->assertNotNull($info);
@@ -47,7 +47,7 @@ class McpClientTest extends TestCase
     {
         $client = new Client('test-api-key');
         $mcpChat = $client->mcpChat();
-        
+
         $this->assertInstanceOf(McpEnabledChat::class, $mcpChat);
         $this->assertInstanceOf(McpClientManager::class, $mcpChat->getMcpManager());
     }
@@ -56,9 +56,9 @@ class McpClientTest extends TestCase
     {
         $client = new Client('test-api-key');
         $manager = $client->getMcpManager();
-        
+
         $this->assertInstanceOf(McpClientManager::class, $manager);
-        
+
         // Should return the same instance
         $manager2 = $client->getMcpManager();
         $this->assertSame($manager, $manager2);
@@ -67,15 +67,15 @@ class McpClientTest extends TestCase
     public function test_client_can_add_mcp_server()
     {
         $client = new Client('test-api-key');
-        
+
         $client->addMcpServer('test-server', 'stdio', [
             'command' => 'php',
             'args' => ['server.php']
         ]);
-        
+
         $manager = $client->getMcpManager();
         $this->assertFalse($manager->isConnected('test-server'));
-        
+
         $info = $manager->getServerInfo('test-server');
         $this->assertNotNull($info);
         $this->assertEquals('test-server', $info['name']);
@@ -85,27 +85,27 @@ class McpClientTest extends TestCase
     {
         $client = new Client('test-api-key');
         $mcpChat = $client->mcpChat();
-        
+
         $this->assertInstanceOf(\Mistral\Resources\Chat::class, $mcpChat);
     }
 
     public function test_mcp_client_manager_handles_invalid_transport()
     {
         $manager = new McpClientManager();
-        
+
         $this->expectException(\InvalidArgumentException::class);
         $this->expectExceptionMessage('Unsupported transport type: invalid');
-        
+
         $manager->addServer('test', 'invalid', []);
     }
 
     public function test_mcp_client_manager_handles_unknown_server()
     {
         $manager = new McpClientManager();
-        
+
         $this->expectException(\InvalidArgumentException::class);
         $this->expectExceptionMessage("Server 'unknown' not configured");
-        
+
         $manager->connect('unknown');
     }
 
@@ -113,7 +113,7 @@ class McpClientTest extends TestCase
     {
         $manager = new McpClientManager();
         $tools = $manager->listAllTools();
-        
+
         $this->assertIsArray($tools);
         $this->assertEmpty($tools);
     }
@@ -122,7 +122,7 @@ class McpClientTest extends TestCase
     {
         $manager = new McpClientManager();
         $result = $manager->callTool('unknown-server', 'test-tool', []);
-        
+
         $this->assertFalse($result['success']);
         $this->assertStringContainsString('Not connected to server', $result['error']);
     }
@@ -131,7 +131,7 @@ class McpClientTest extends TestCase
     {
         $manager = new McpClientManager();
         $info = $manager->getServerInfo('unknown');
-        
+
         $this->assertNull($info);
     }
 
@@ -139,7 +139,7 @@ class McpClientTest extends TestCase
     {
         $client = new Client('test-api-key');
         $mcpChat = $client->mcpChat();
-        
+
         $tools = $mcpChat->getAvailableMcpTools();
         $this->assertIsArray($tools);
     }
@@ -148,9 +148,9 @@ class McpClientTest extends TestCase
     {
         $client = new Client('test-api-key');
         $mcpChat = $client->mcpChat();
-        
+
         $mcpChat->addMcpServer('test', 'stdio', ['command' => 'php']);
-        
+
         // Should not throw exception
         $this->assertTrue(true);
     }

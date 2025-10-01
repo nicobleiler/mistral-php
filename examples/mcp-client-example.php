@@ -3,13 +3,13 @@
 /**
  * Example: Mistral AI with MCP Client Integration
  * 
- * This example demonstrates how to use Mistral AI with external MCP tools
+ * This example demonstrates how to use Nicobleiler\Mistral AI with external MCP tools
  * to extend the AI's capabilities with external services.
  */
 
 require_once __DIR__ . '/../vendor/autoload.php';
 
-use Mistral\Client;
+use Nicobleiler\Mistral\Client;
 use Psr\Log\NullLogger;
 
 // Initialize Mistral client
@@ -40,10 +40,10 @@ $mcpChat = $client->mcpChat(new NullLogger());
 
 try {
     echo "=== Mistral AI with MCP Tools Example ===\n\n";
-    
+
     // Connect to MCP servers
     echo "Connecting to MCP servers...\n";
-    
+
     try {
         $mcpChat->connectToMcpServer('file-tools');
         echo "✓ Connected to file-tools server\n";
@@ -51,7 +51,7 @@ try {
         echo "⚠ Could not connect to file-tools: " . $e->getMessage() . "\n";
         echo "  (This is expected without a real MCP server)\n";
     }
-    
+
     // Note: This would fail without a real server, but shows the pattern
     try {
         $mcpChat->connectToMcpServer('weather-api');
@@ -60,7 +60,7 @@ try {
         echo "⚠ Could not connect to weather-api: " . $e->getMessage() . "\n";
         echo "  (This is expected without a real MCP server)\n";
     }
-    
+
     // List available tools
     echo "\nAvailable MCP tools:\n";
     $tools = $mcpChat->getAvailableMcpTools();
@@ -74,19 +74,19 @@ try {
             }
         }
     }
-    
+
     // Example conversation with tool usage
     echo "\n=== Example Conversation ===\n";
-    
+
     $messages = [
         [
-            'role' => 'user', 
+            'role' => 'user',
             'content' => 'Can you help me analyze a log file? First, list the files in /tmp to see what\'s available.'
         ]
     ];
-    
+
     echo "User: " . $messages[0]['content'] . "\n\n";
-    
+
     // Note: This would require a real MCP server to work
     echo "Assistant: I'd be happy to help you analyze a log file! However, to demonstrate this properly, you would need:\n\n";
     echo "1. A running MCP server that provides file system tools\n";
@@ -97,17 +97,16 @@ try {
     echo "- It would call the 'list_files' tool with the path '/tmp'\n";
     echo "- Get the results and show you available files\n";
     echo "- Then help you analyze any log files it finds\n\n";
-    
+
     // Manual tool demonstration (if you had a working server)
     echo "=== Manual Tool Call Example ===\n";
     $mcpManager = $client->getMcpManager();
-    
+
     $result = $mcpManager->callTool('file-tools', 'list_files', ['path' => '/tmp']);
     if (!$result['success']) {
         echo "Tool call result: " . $result['error'] . "\n";
         echo "(This is expected without a running MCP server)\n";
     }
-    
 } catch (Exception $e) {
     echo "Error: " . $e->getMessage() . "\n";
     echo "This is expected when running without real MCP servers.\n";

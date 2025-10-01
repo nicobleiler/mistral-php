@@ -1,6 +1,6 @@
 <?php
 
-namespace Mistral\Types\Chat;
+namespace Nicobleiler\Mistral\Types\Chat;
 
 class ChatRequest
 {
@@ -31,7 +31,7 @@ class ChatRequest
     public static function fromArray(array $data): self
     {
         $messages = array_map(fn($msg) => Message::fromArray($msg), $data['messages']);
-        
+
         $functions = null;
         if (isset($data['functions'])) {
             $functions = array_map(fn($func) => Function_::fromArray($func), $data['functions']);

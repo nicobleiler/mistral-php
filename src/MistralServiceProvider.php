@@ -1,6 +1,6 @@
 <?php
 
-namespace Mistral;
+namespace Nicobleiler\Mistral;
 
 use Illuminate\Support\ServiceProvider;
 
@@ -13,17 +13,17 @@ class MistralServiceProvider extends ServiceProvider
     {
         $this->app->singleton(Client::class, function ($app) {
             $config = $app['config']['mistral'] ?? [];
-            
+
             $apiKey = $config['api_key'] ?? env('MISTRAL_API_KEY');
             $baseUrl = $config['base_url'] ?? env('MISTRAL_BASE_URL');
-            
+
             if (!$apiKey) {
                 throw new \InvalidArgumentException('Mistral API key is required. Set MISTRAL_API_KEY environment variable or publish the config file.');
             }
-            
+
             return new Client($apiKey, $baseUrl);
         });
-        
+
         $this->app->alias(Client::class, 'mistral');
     }
 

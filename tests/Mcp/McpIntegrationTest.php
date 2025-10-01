@@ -1,9 +1,9 @@
 <?php
 
-namespace Mistral\Tests\Mcp;
+namespace Nicobleiler\Mistral\Tests\Mcp;
 
 use PHPUnit\Framework\TestCase;
-use Mistral\Mcp\McpClientManager;
+use Nicobleiler\Mistral\Mcp\McpClientManager;
 use Psr\Log\NullLogger;
 
 /**
@@ -21,19 +21,19 @@ use Psr\Log\NullLogger;
 class McpIntegrationTest extends TestCase
 {
     private McpClientManager $manager;
-    
+
     protected function setUp(): void
     {
         parent::setUp();
         $this->manager = new McpClientManager(new NullLogger());
-        
+
         // Check if npx is available
         exec('which npx 2>&1', $output, $returnCode);
         if ($returnCode !== 0) {
             $this->markTestSkipped('npx is not available');
         }
     }
-    
+
     protected function tearDown(): void
     {
         // Clean up any connections
@@ -44,7 +44,7 @@ class McpIntegrationTest extends TestCase
         }
         parent::tearDown();
     }
-    
+
     public function test_can_configure_mcp_everything_server()
     {
         // This test validates that we can configure the everything server
@@ -53,34 +53,34 @@ class McpIntegrationTest extends TestCase
             'command' => 'npx',
             'args' => ['--yes', '@modelcontextprotocol/server-everything', 'stdio'],
         ]);
-        
+
         $info = $this->manager->getServerInfo('everything');
         $this->assertNotNull($info);
         $this->assertEquals('everything', $info['name']);
         $this->assertEquals('stdio', $info['transport']);
         $this->assertFalse($info['connected']);
     }
-    
+
     public function test_demonstrates_sdk_notification_bug()
     {
         $this->markTestSkipped(
             'This test is skipped by default as it demonstrates the SDK bug. ' .
-            'The everything server sends LoggingMessageNotification which causes: ' .
-            'TypeError: Notification::__construct(): Argument #2 ($params) must be of type ' .
-            '?NotificationParams, LoggingMessageNotificationParams given. ' .
-            'This affects logiscape/mcp-sdk-php v1.2.3 when connecting to server-everything.'
+                'The everything server sends LoggingMessageNotification which causes: ' .
+                'TypeError: Notification::__construct(): Argument #2 ($params) must be of type ' .
+                '?NotificationParams, LoggingMessageNotificationParams given. ' .
+                'This affects logiscape/mcp-sdk-php v1.2.3 when connecting to server-everything.'
         );
-        
+
         $this->manager->addServer('everything', 'stdio', [
             'command' => 'npx',
             'args' => ['--yes', '@modelcontextprotocol/server-everything', 'stdio'],
         ]);
-        
+
         // This will trigger the SDK bug
         $this->expectException(\TypeError::class);
         $this->manager->connect('everything');
     }
-    
+
     public function test_server_configuration_with_npx()
     {
         // Validate that npx configuration is properly stored
@@ -88,11 +88,11 @@ class McpIntegrationTest extends TestCase
             'command' => 'npx',
             'args' => ['--yes', '@modelcontextprotocol/server-everything', 'stdio'],
         ]);
-        
+
         $info = $this->manager->getServerInfo('everything');
         $this->assertEquals('stdio', $info['transport']);
     }
-    
+
     public function test_multiple_server_configuration()
     {
         // Test that multiple everything servers can be configured
@@ -100,15 +100,15 @@ class McpIntegrationTest extends TestCase
             'command' => 'npx',
             'args' => ['--yes', '@modelcontextprotocol/server-everything', 'stdio'],
         ]);
-        
+
         $this->manager->addServer('everything2', 'stdio', [
             'command' => 'npx',
             'args' => ['--yes', '@modelcontextprotocol/server-everything', 'stdio'],
         ]);
-        
+
         $info1 = $this->manager->getServerInfo('everything1');
         $info2 = $this->manager->getServerInfo('everything2');
-        
+
         $this->assertNotNull($info1);
         $this->assertNotNull($info2);
         $this->assertEquals('everything1', $info1['name']);

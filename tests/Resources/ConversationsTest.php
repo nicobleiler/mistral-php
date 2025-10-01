@@ -1,11 +1,11 @@
 <?php
 
-namespace Mistral\Tests\Resources;
+namespace Nicobleiler\Mistral\Tests\Resources;
 
 use PHPUnit\Framework\TestCase;
-use Mistral\Resources\Conversations;
-use Mistral\Types\Conversations\Conversation;
-use Mistral\Types\Conversations\ConversationRequest;
+use Nicobleiler\Mistral\Resources\Conversations;
+use Nicobleiler\Mistral\Types\Conversations\Conversation;
+use Nicobleiler\Mistral\Types\Conversations\ConversationRequest;
 use GuzzleHttp\Client;
 use GuzzleHttp\Psr7\Response;
 use Mockery;
@@ -21,7 +21,7 @@ class ConversationsTest extends TestCase
     {
         $client = Mockery::mock(Client::class);
         $conversations = new Conversations($client);
-        
+
         $this->assertInstanceOf(Conversations::class, $conversations);
     }
 

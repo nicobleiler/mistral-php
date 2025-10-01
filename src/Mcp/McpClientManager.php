@@ -1,6 +1,6 @@
 <?php
 
-namespace Mistral\Mcp;
+namespace Nicobleiler\Mistral\Mcp;
 
 use Mcp\Client\Client;
 use Mcp\Client\ClientSession;
@@ -16,10 +16,10 @@ class McpClientManager
 {
     /** @var array<string, ClientSession> */
     private array $sessions = [];
-    
+
     /** @var array<string, array> */
     private array $serverConfigs = [];
-    
+
     private LoggerInterface $logger;
 
     public function __construct(?LoggerInterface $logger = null)
@@ -66,16 +66,16 @@ class McpClientManager
 
         $config = $this->serverConfigs[$serverName];
         $this->logger->info("Attempting to connect to MCP server '{$serverName}'");
-        
+
         try {
             $client = new Client($this->logger);
-            
+
             if ($config['transport'] === 'stdio') {
                 // STDIO transport
                 $command = $config['config']['command'] ?? 'node';
                 $args = $config['config']['args'] ?? [];
                 $env = $config['config']['env'] ?? null;
-                
+
                 $session = $client->connect($command, $args, $env);
             } else {
                 // HTTP transport
@@ -85,10 +85,10 @@ class McpClientManager
                     'connectionTimeout' => $config['config']['timeout'] ?? 30,
                     'readTimeout' => $config['config']['timeout'] ?? 60,
                 ];
-                
+
                 $session = $client->connect($url, $headers, $httpOptions);
             }
-            
+
             $this->sessions[$serverName] = $session;
             $this->logger->info("Connected to MCP server '{$serverName}'");
         } catch (\Exception $e) {
@@ -138,11 +138,11 @@ class McpClientManager
     public function listAllTools(): array
     {
         $allTools = [];
-        
+
         foreach ($this->sessions as $serverName => $session) {
             try {
                 $toolsResult = $session->listTools();
-                
+
                 $tools = [];
                 if (!empty($toolsResult->tools)) {
                     foreach ($toolsResult->tools as $tool) {
@@ -153,7 +153,7 @@ class McpClientManager
                         ];
                     }
                 }
-                
+
                 $allTools[$serverName] = $tools;
             } catch (\Exception $e) {
                 $this->logger->warning("Failed to list tools from server '{$serverName}'", [
@@ -162,7 +162,7 @@ class McpClientManager
                 $allTools[$serverName] = [];
             }
         }
-        
+
         return $allTools;
     }
 
@@ -191,7 +191,7 @@ class McpClientManager
 
             $session = $this->sessions[$serverName];
             $result = $session->callTool($toolName, $arguments);
-            
+
             // Extract content from the result
             $content = '';
             if (!empty($result->content)) {
@@ -201,7 +201,7 @@ class McpClientManager
                     }
                 }
             }
-            
+
             return [
                 'success' => !$result->isError,
                 'content' => $content,

@@ -15,7 +15,7 @@
 
 require_once __DIR__ . '/../../vendor/autoload.php';
 
-use Mistral\Mcp\McpClientManager;
+use Nicobleiler\Mistral\Mcp\McpClientManager;
 use Psr\Log\NullLogger;
 
 echo "=== MCP Everything Server Test ===\n\n";
@@ -47,12 +47,12 @@ echo "Connecting to MCP everything server via npx...\n";
 try {
     $manager->connect('everything');
     echo "✓ Connected successfully\n\n";
-    
+
     echo "Attempting to list tools...\n";
-    
+
     try {
         $tools = $manager->listAllTools();
-        
+
         echo "✓ Listed tools successfully!\n";
         foreach ($tools as $serverName => $serverTools) {
             echo "Server: {$serverName}\n";
@@ -70,11 +70,10 @@ try {
         echo "Server-everything sends: LoggingMessageNotificationParams\n";
         echo "SDK expects: NotificationParams\n";
     }
-    
+
     echo "\nDisconnecting...\n";
     $manager->disconnect('everything');
     echo "✓ Disconnected\n";
-    
 } catch (Exception $e) {
     echo "Error: " . $e->getMessage() . "\n";
     echo "Trace: " . $e->getTraceAsString() . "\n";

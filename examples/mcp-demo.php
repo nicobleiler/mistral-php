@@ -9,7 +9,7 @@
 
 require_once __DIR__ . '/../vendor/autoload.php';
 
-use Mistral\Client;
+use Nicobleiler\Mistral\Client;
 
 echo "=== Mistral AI MCP Client Integration Demo (logiscape/mcp-sdk-php) ===\n\n";
 
