@@ -175,4 +175,29 @@ class ConversationsTest extends TestCase
         $this->assertEquals('conv-abc123', $result['id']);
         $this->assertTrue($result['deleted']);
     }
+
+    public function test_conversations_list_handles_missing_keys_gracefully()
+    {
+        $client = Mockery::mock(Client::class);
+        // Response missing 'object' and 'has_more' keys
+        $expectedResponse = json_encode([
+            'data' => []
+        ]);
+
+        $client->shouldReceive('request')
+            ->once()
+            ->with('GET', '/v1/conversations', ['query' => []])
+            ->andReturn(new Response(200, [], $expectedResponse));
+
+        $conversations = new Conversations($client);
+        $result = $conversations->list();
+
+        // Should use default values when keys are missing
+        $this->assertEquals('list', $result['object']);
+        $this->assertIsArray($result['data']);
+        $this->assertEmpty($result['data']);
+        $this->assertNull($result['first_id']);
+        $this->assertNull($result['last_id']);
+        $this->assertFalse($result['has_more']);
+    }
 }
