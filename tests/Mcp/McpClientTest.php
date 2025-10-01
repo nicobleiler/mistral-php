@@ -45,8 +45,6 @@ class McpClientTest extends TestCase
 
     public function test_client_can_create_mcp_chat()
     {
-        $this->markTestSkipped('MCP SDK installation needs to be completed');
-        
         $client = new Client('test-api-key');
         $mcpChat = $client->mcpChat();
         
@@ -85,8 +83,6 @@ class McpClientTest extends TestCase
 
     public function test_mcp_enabled_chat_extends_base_chat()
     {
-        $this->markTestSkipped('MCP SDK installation needs to be completed');
-        
         $client = new Client('test-api-key');
         $mcpChat = $client->mcpChat();
         
@@ -141,8 +137,6 @@ class McpClientTest extends TestCase
 
     public function test_mcp_enabled_chat_can_get_available_tools()
     {
-        $this->markTestSkipped('MCP SDK installation needs to be completed');
-        
         $client = new Client('test-api-key');
         $mcpChat = $client->mcpChat();
         
@@ -152,8 +146,6 @@ class McpClientTest extends TestCase
 
     public function test_mcp_enabled_chat_can_add_server()
     {
-        $this->markTestSkipped('MCP SDK installation needs to be completed');
-        
         $client = new Client('test-api-key');
         $mcpChat = $client->mcpChat();
         
