@@ -78,11 +78,11 @@ class Conversations
         $data = json_decode($response->getBody()->getContents(), true);
         
         return [
-            'object' => $data['object'],
-            'data' => array_map(fn($item) => Conversation::fromArray($item), $data['data']),
+            'object' => $data['object'] ?? 'list',
+            'data' => array_map(fn($item) => Conversation::fromArray($item), $data['data'] ?? []),
             'first_id' => $data['first_id'] ?? null,
             'last_id' => $data['last_id'] ?? null,
-            'has_more' => $data['has_more'],
+            'has_more' => $data['has_more'] ?? false,
         ];
     }
 
