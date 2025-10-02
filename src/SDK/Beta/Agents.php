@@ -1,17 +1,17 @@
 <?php
 
-namespace Nicobleiler\Mistral\Resources;
+namespace Nicobleiler\Mistral\SDK\Beta;
 
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\GuzzleException;
 
 class Agents
 {
-    private Client $client;
+    private Client $httpClient;
 
-    public function __construct(Client $client)
+    public function __construct(Client $httpClient)
     {
-        $this->client = $client;
+        $this->httpClient = $httpClient;
     }
 
     /**
@@ -49,7 +49,7 @@ class Agents
      */
     public function create(array $params): array
     {
-        $response = $this->client->request('POST', '/v1/agents', [
+        $response = $this->httpClient->request('POST', '/v1/agents', [
             'json' => $params
         ]);
 
@@ -96,7 +96,7 @@ class Agents
             $queryParams['before'] = $params['before'];
         }
 
-        $response = $this->client->request('GET', '/v1/agents', [
+        $response = $this->httpClient->request('GET', '/v1/agents', [
             'query' => $queryParams
         ]);
 
@@ -123,7 +123,7 @@ class Agents
      */
     public function retrieve(string $agentId): array
     {
-        $response = $this->client->request('GET', "/v1/agents/{$agentId}");
+        $response = $this->httpClient->request('GET', "/v1/agents/{$agentId}");
 
         return json_decode($response->getBody()->getContents(), true);
     }
@@ -164,7 +164,7 @@ class Agents
      */
     public function update(string $agentId, array $params): array
     {
-        $response = $this->client->request('POST', "/v1/agents/{$agentId}", [
+        $response = $this->httpClient->request('POST', "/v1/agents/{$agentId}", [
             'json' => $params
         ]);
 
@@ -184,7 +184,7 @@ class Agents
      */
     public function delete(string $agentId): array
     {
-        $response = $this->client->request('DELETE', "/v1/agents/{$agentId}");
+        $response = $this->httpClient->request('DELETE', "/v1/agents/{$agentId}");
 
         return json_decode($response->getBody()->getContents(), true);
     }

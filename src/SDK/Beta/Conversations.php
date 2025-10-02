@@ -1,6 +1,6 @@
 <?php
 
-namespace Nicobleiler\Mistral\Resources;
+namespace Nicobleiler\Mistral\SDK\Beta;
 
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\GuzzleException;
@@ -9,11 +9,11 @@ use Nicobleiler\Mistral\Types\Conversations\ConversationRequest;
 
 class Conversations
 {
-    private Client $client;
+    private Client $httpClient;
 
-    public function __construct(Client $client)
+    public function __construct(Client $httpClient)
     {
-        $this->client = $client;
+        $this->httpClient = $httpClient;
     }
 
     /**
@@ -29,7 +29,7 @@ class Conversations
             $params = ConversationRequest::fromArray($params);
         }
 
-        $response = $this->client->request('POST', '/v1/conversations', [
+        $response = $this->httpClient->request('POST', '/v1/conversations', [
             'json' => $params->toArray()
         ]);
 
@@ -71,7 +71,7 @@ class Conversations
             $queryParams['before'] = $params['before'];
         }
 
-        $response = $this->client->request('GET', '/v1/conversations', [
+        $response = $this->httpClient->request('GET', '/v1/conversations', [
             'query' => $queryParams
         ]);
 
@@ -95,7 +95,7 @@ class Conversations
      */
     public function retrieve(string $conversationId): Conversation
     {
-        $response = $this->client->request('GET', "/v1/conversations/{$conversationId}");
+        $response = $this->httpClient->request('GET', "/v1/conversations/{$conversationId}");
 
         $data = json_decode($response->getBody()->getContents(), true);
         return Conversation::fromArray($data);
@@ -113,7 +113,7 @@ class Conversations
      */
     public function update(string $conversationId, array $params): Conversation
     {
-        $response = $this->client->request('PATCH', "/v1/conversations/{$conversationId}", [
+        $response = $this->httpClient->request('PATCH', "/v1/conversations/{$conversationId}", [
             'json' => $params
         ]);
 
@@ -134,7 +134,7 @@ class Conversations
      */
     public function delete(string $conversationId): array
     {
-        $response = $this->client->request('DELETE', "/v1/conversations/{$conversationId}");
+        $response = $this->httpClient->request('DELETE', "/v1/conversations/{$conversationId}");
 
         return json_decode($response->getBody()->getContents(), true);
     }

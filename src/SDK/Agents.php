@@ -1,19 +1,19 @@
 <?php
 
-namespace Nicobleiler\Mistral\Resources;
+namespace Nicobleiler\Mistral\SDK;
 
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\GuzzleException;
 use Nicobleiler\Mistral\Types\Chat\ChatRequest;
 use Nicobleiler\Mistral\Types\Chat\ChatResponse;
 
-class Chat
+class Agents
 {
-    private Client $client;
+    private Client $httpClient;
 
-    public function __construct(Client $client)
+    public function __construct(Client $httpClient)
     {
-        $this->client = $client;
+        $this->httpClient = $httpClient;
     }
 
     /**
@@ -29,7 +29,7 @@ class Chat
             $params = ChatRequest::fromArray($params);
         }
 
-        $response = $this->client->request('POST', '/v1/chat/completions', [
+        $response = $this->httpClient->request('POST', '/v1/chat/completions', [
             'json' => $params->toArray()
         ]);
 
@@ -53,7 +53,7 @@ class Chat
 
         $params['stream'] = true;
 
-        $response = $this->client->request('POST', '/v1/chat/completions', [
+        $response = $this->httpClient->request('POST', '/v1/chat/completions', [
             'json' => $params,
             'stream' => true
         ]);

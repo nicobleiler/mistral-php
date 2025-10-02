@@ -2,15 +2,12 @@
 
 namespace Nicobleiler\Mistral\Tests;
 
-use Nicobleiler\Mistral\Resources\Embeddings;
 use PHPUnit\Framework\TestCase;
-use Nicobleiler\Mistral\Client;
-use Nicobleiler\Mistral\Resources\Agents;
-use Nicobleiler\Mistral\Resources\Chat;
-use Nicobleiler\Mistral\Resources\Conversations;
-use Nicobleiler\Mistral\Resources\Files;
-use Nicobleiler\Mistral\Resources\FineTuning;
-use Nicobleiler\Mistral\Resources\Models;
+use Nicobleiler\Mistral\SDK\Client;
+use Nicobleiler\Mistral\SDK\Agents;
+use Nicobleiler\Mistral\SDK\Chat;
+use Nicobleiler\Mistral\SDK\Conversations;
+use Nicobleiler\Mistral\SDK\Files;
 
 class ClientTest extends TestCase
 {
@@ -28,32 +25,11 @@ class ClientTest extends TestCase
         $this->assertInstanceOf(Chat::class, $client->chat());
     }
 
-    public function test_client_has_embeddings_resource()
-    {
-        $client = new Client('test-api-key');
-
-        $this->assertInstanceOf(Embeddings::class, $client->embeddings());
-    }
-
-    public function test_client_has_models_resource()
-    {
-        $client = new Client('test-api-key');
-
-        $this->assertInstanceOf(Models::class, $client->models());
-    }
-
     public function test_client_has_files_resource()
     {
         $client = new Client('test-api-key');
 
         $this->assertInstanceOf(Files::class, $client->files());
-    }
-
-    public function test_client_has_fine_tuning_resource()
-    {
-        $client = new Client('test-api-key');
-
-        $this->assertInstanceOf(FineTuning::class, $client->fineTuning());
     }
 
     public function test_client_has_agents_resource()

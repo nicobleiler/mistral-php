@@ -3,6 +3,7 @@
 namespace Nicobleiler\Mistral;
 
 use Illuminate\Support\ServiceProvider;
+use Nicobleiler\Mistral\SDK\Client;
 
 class MistralServiceProvider extends ServiceProvider
 {

@@ -4,14 +4,8 @@ A comprehensive PHP client library for the Mistral AI API with Laravel support.
 
 ## Features
 
-- 🚀 Full Mistral AI API support (Chat Completions, Embeddings, Models, Conversations)
-- 🔌 Model Context Protocol (MCP) client integration for external tool calling
-- 🎯 Laravel integration with service provider and facade
-- 🔄 Streaming support for chat completions
-- 📝 Type-safe responses with PHP classes
-- ⚡ PSR-4 autoloading
-- 🧪 Comprehensive test suite
-- 🔄 Backward compatibility with array-based API
+- [WIP] Full Mistral AI API support (Chat Completions, Embeddings, Models, Conversations)
+- [WIP] Model Context Protocol (MCP) client integration for external tool calling
 
 ## Installation
 
@@ -42,7 +36,7 @@ MISTRAL_API_KEY=your-api-key-here
 ### Basic Usage
 
 ```php
-use Nicobleiler\Mistral\Client;
+use Nicobleiler\Mistral\SDK;
 
 $client = new Client('your-api-key');
 
@@ -71,7 +65,7 @@ $response = Mistral::chat()->create([
 ]);
 
 // Or inject the client
-use Nicobleiler\Mistral\Client;
+use Nicobleiler\Mistral\SDK;
 
 class ChatController extends Controller 
 {
@@ -377,7 +371,7 @@ This package includes MCP client support using the `logiscape/mcp-sdk-php` packa
 Connect to external MCP servers and use their tools in Mistral conversations:
 
 ```php
-use Nicobleiler\Mistral\Client;
+use Nicobleiler\Mistral\SDK;
 
 $client = new Client('your-api-key');
 

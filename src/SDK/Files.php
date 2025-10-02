@@ -1,17 +1,17 @@
 <?php
 
-namespace Nicobleiler\Mistral\Resources;
+namespace Nicobleiler\Mistral\SDK;
 
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\GuzzleException;
 
 class Files
 {
-    private Client $client;
+    private Client $httpClient;
 
-    public function __construct(Client $client)
+    public function __construct(Client $httpClient)
     {
-        $this->client = $client;
+        $this->httpClient = $httpClient;
     }
 
     /**
@@ -57,7 +57,7 @@ class Files
             ];
         }
 
-        $response = $this->client->request('POST', '/v1/files', [
+        $response = $this->httpClient->request('POST', '/v1/files', [
             'multipart' => $multipart
         ]);
 
@@ -90,7 +90,7 @@ class Files
             $queryParams['purpose'] = $params['purpose'];
         }
 
-        $response = $this->client->request('GET', '/v1/files', [
+        $response = $this->httpClient->request('GET', '/v1/files', [
             'query' => $queryParams
         ]);
 
@@ -113,7 +113,7 @@ class Files
      */
     public function retrieve(string $fileId): array
     {
-        $response = $this->client->request('GET', "/v1/files/{$fileId}");
+        $response = $this->httpClient->request('GET', "/v1/files/{$fileId}");
 
         return json_decode($response->getBody()->getContents(), true);
     }
@@ -131,7 +131,7 @@ class Files
      */
     public function delete(string $fileId): array
     {
-        $response = $this->client->request('DELETE', "/v1/files/{$fileId}");
+        $response = $this->httpClient->request('DELETE', "/v1/files/{$fileId}");
 
         return json_decode($response->getBody()->getContents(), true);
     }
@@ -145,7 +145,7 @@ class Files
      */
     public function download(string $fileId): string
     {
-        $response = $this->client->request('GET', "/v1/files/{$fileId}/content");
+        $response = $this->httpClient->request('GET', "/v1/files/{$fileId}/content");
 
         return $response->getBody()->getContents();
     }
